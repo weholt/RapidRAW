@@ -12,10 +12,12 @@ import { useSettingsStore } from '../../store/useSettingsStore';
 
 import { ImageFile, LibraryViewMode, ThumbnailAspectRatio, ThumbnailSize } from '../ui/AppProperties';
 import { GroupBadgeInfo, GroupId } from '../../utils/imageGrouping';
+import { CaptureSession } from '../../utils/captureTimeGrouping';
 
 interface LibraryViewProps {
   sortedImageList: ImageFile[];
   groupBadgeInfo: Map<GroupId, GroupBadgeInfo> | null;
+  captureSessions: CaptureSession[];
   thumbnailSize: ThumbnailSize;
   thumbnailAspectRatio: ThumbnailAspectRatio;
   libraryViewMode: LibraryViewMode;
@@ -43,6 +45,7 @@ interface LibraryViewProps {
 export default function LibraryView({
   sortedImageList,
   groupBadgeInfo,
+  captureSessions,
   thumbnailSize,
   thumbnailAspectRatio,
   libraryViewMode,
@@ -134,6 +137,7 @@ export default function LibraryView({
             appSettings={appSettings}
             currentFolderPath={currentFolderPath}
             groupBadgeInfo={groupBadgeInfo}
+            captureSessions={captureSessions}
             imageList={sortedImageList}
             imageRatings={imageRatings}
             importState={importState}

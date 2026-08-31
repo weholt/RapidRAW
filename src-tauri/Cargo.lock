@@ -74,6 +74,7 @@ dependencies = [
  "webkit2gtk-nvidia-quirk",
  "webp",
  "wgpu",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

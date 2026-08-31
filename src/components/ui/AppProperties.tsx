@@ -1,4 +1,4 @@
-import { ExportPreset } from './ExportImportProperties';
+import { ExportPreset, ImportPreset } from './ExportImportProperties';
 import { Adjustments, CopyPasteSettings } from '../../utils/adjustments';
 import { ToolType } from '../panel/right/Masks';
 
@@ -37,6 +37,7 @@ export enum Invokes {
   ApplyDenoising = 'apply_denoising',
   CalculateAutoAdjustments = 'calculate_auto_adjustments',
   CancelExport = 'cancel_export',
+  CancelImport = 'cancel_import',
   CheckAIConnectorStatus = 'check_ai_connector_status',
   ClearAllSidecars = 'clear_all_sidecars',
   ClearAiTags = 'clear_ai_tags',
@@ -47,6 +48,7 @@ export enum Invokes {
   CreateVirtualCopy = 'create_virtual_copy',
   CullImages = 'cull_images',
   DeleteFolder = 'delete_folder',
+  DiscoverExportWorkflows = 'discover_export_workflows',
   DuplicateFile = 'duplicate_file',
   EstimateExportSizes = 'estimate_export_sizes',
   ExportImages = 'export_images',
@@ -68,7 +70,10 @@ export enum Invokes {
   HandleImportPresetsFromFile = 'handle_import_presets_from_file',
   HandleImportPresetsFromFiles = 'handle_import_presets_from_files',
   HandleImportLegacyPresetsFromFile = 'handle_import_legacy_presets_from_file',
-  ImportFiles = 'import_files',
+  CreateImportPlan = 'create_import_plan',
+  GetImportPreviewPage = 'get_import_preview_page',
+  ExecuteImportPlan = 'execute_import_plan',
+  ImportAndroidContentFiles = 'import_android_content_files',
   InvokeGenerativeReplaseWithMaskDef = 'invoke_generative_replace_with_mask_def',
   IsTetheringSupported = 'is_tethering_supported',
   ListImagesInDir = 'list_images_in_dir',
@@ -82,6 +87,7 @@ export enum Invokes {
   RemoveTagForPaths = 'remove_tag_for_paths',
   RenameFiles = 'rename_files',
   RenameFolder = 'rename_folder',
+  RefreshExportWorkflows = 'refresh_export_workflows',
   ResetAdjustmentsForPaths = 'reset_adjustments_for_paths',
   SaveMetadataAndUpdateThumbnail = 'save_metadata_and_update_thumbnail',
   SaveCollage = 'save_collage',
@@ -215,6 +221,7 @@ export interface AppSettings {
   processingBackend?: string;
   linuxGpuOptimization?: boolean;
   exportPresets?: ExportPreset[];
+  importPresets?: ImportPreset[];
   myLenses?: any;
   enableFolderImageCounts?: boolean;
   displayEditIcon?: boolean;
@@ -244,6 +251,8 @@ export interface AppSettings {
   grouping?: GroupingMode;
   requireMatchingExif?: boolean;
   groupEditedFiles?: boolean;
+  captureTimeGroupingEnabled?: boolean;
+  captureTimeGroupingMinutes?: number;
   groupPreferredType?: GroupPreference; // legacy
   alwaysDecodeRawThumbnails?: boolean;
   workspace?: WorkspaceState;
@@ -325,6 +334,7 @@ export interface Preset {
 export interface Progress {
   completed?: number;
   current?: number;
+  stage?: string;
   total: number;
 }
 

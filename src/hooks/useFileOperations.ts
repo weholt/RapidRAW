@@ -8,7 +8,7 @@ import { useUIStore } from '../store/useUIStore';
 import { useProcessStore } from '../store/useProcessStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { Invokes } from '../components/ui/AppProperties';
-import { Status } from '../components/ui/ExportImportProperties';
+import { ExecuteImportRequest, ImportResult, Status } from '../components/ui/ExportImportProperties';
 
 export function useFileOperations(
   refreshImageList: () => Promise<void>,
@@ -265,115 +265,107 @@ export function useFileOperations(
     }
   }, []);
 
-  const startImportFiles = useCallback(async (sourcePaths: string[], destinationFolder: string, settings: any) => {
-    if (sourcePaths.length === 0 || !destinationFolder) return;
-
+  const handleStartImport = useCallback(async (request: ExecuteImportRequest) => {
+    useProcessStore.getState().setImportState({
+      status: Status.Importing,
+      errorMessage: '',
+      planId: request.planId,
+      result: null,
+    });
     try {
-      await invoke(Invokes.ImportFiles, { destinationFolder, settings, sourcePaths });
+      const result = await invoke<ImportResult>(Invokes.ExecuteImportPlan, { request });
+      useProcessStore.getState().setImportState({
+        result,
+        status: result.cancelled ? Status.Cancelled : result.failed > 0 ? Status.Error : Status.Success,
+        errorMessage: result.failed > 0 ? `${result.failed} import item(s) failed` : '',
+      });
     } catch (err) {
-      console.error('Failed to start import:', err);
-      useProcessStore
-        .getState()
-        .setImportState({ status: Status.Error, errorMessage: `Failed to start import: ${err}` });
+      useProcessStore.getState().setImportState({ status: Status.Error, errorMessage: `Failed to import: ${err}` });
     }
   }, []);
 
-  const handleStartImport = useCallback(
-    async (settings: any) => {
-      const { importTargetFolder, importSourcePaths } = useUIStore.getState();
-      if (!importTargetFolder) return;
-      await startImportFiles(importSourcePaths, importTargetFolder, settings);
-    },
-    [startImportFiles],
-  );
+  const handleImportClick = useCallback(async (targetPath: string) => {
+    const { supportedTypes, osPlatform } = useSettingsStore.getState();
+    const { setUI } = useUIStore.getState();
+    const isAndroid = osPlatform === 'android';
 
-  const handleImportClick = useCallback(
-    async (targetPath: string) => {
-      const { supportedTypes, osPlatform } = useSettingsStore.getState();
-      const { setUI } = useUIStore.getState();
-      const isAndroid = osPlatform === 'android';
+    try {
+      const nonRaw = supportedTypes?.nonRaw || [];
+      const raw = supportedTypes?.raw || [];
 
-      try {
-        const nonRaw = supportedTypes?.nonRaw || [];
-        const raw = supportedTypes?.raw || [];
+      const expandExtensions = (exts: string[]) => {
+        return Array.from(new Set(exts.flatMap((ext) => [ext.toLowerCase(), ext.toUpperCase()])));
+      };
 
-        const expandExtensions = (exts: string[]) => {
-          return Array.from(new Set(exts.flatMap((ext) => [ext.toLowerCase(), ext.toUpperCase()])));
-        };
+      const processedNonRaw = expandExtensions(nonRaw);
+      const processedRaw = expandExtensions(raw);
+      const allImageExtensions = [...processedNonRaw, ...processedRaw];
 
-        const processedNonRaw = expandExtensions(nonRaw);
-        const processedRaw = expandExtensions(raw);
-        const allImageExtensions = [...processedNonRaw, ...processedRaw];
+      const typeFilters = isAndroid
+        ? []
+        : [
+            { name: 'All Supported Images', extensions: allImageExtensions },
+            { name: 'RAW Images', extensions: processedRaw },
+            { name: 'Standard Images (JPEG, PNG, etc.)', extensions: processedNonRaw },
+            { name: 'All Files', extensions: ['*'] },
+          ];
 
-        const typeFilters = isAndroid
-          ? []
-          : [
-              { name: 'All Supported Images', extensions: allImageExtensions },
-              { name: 'RAW Images', extensions: processedRaw },
-              { name: 'Standard Images (JPEG, PNG, etc.)', extensions: processedNonRaw },
-              { name: 'All Files', extensions: ['*'] },
-            ];
+      const selected = await open({
+        filters: typeFilters,
+        multiple: true,
+        title: 'Select files to import',
+      });
 
-        const selected = await open({
-          filters: typeFilters,
-          multiple: true,
-          title: 'Select files to import',
+      if (Array.isArray(selected) && selected.length > 0) {
+        const invalidExtensions = new Set<string>();
+        const allowedExtensions = new Set(allImageExtensions.map((e) => e.toLowerCase()));
+
+        const resolvedFiles = await Promise.all(
+          selected.map(async (path) => {
+            if (isAndroid) {
+              try {
+                return await invoke<string>('resolve_android_content_uri_name', { uriStr: path });
+              } catch (e) {
+                console.error('Failed to resolve URI:', e);
+                return path;
+              }
+            }
+            return path;
+          }),
+        );
+
+        const validFiles = selected.filter((originalPath, index) => {
+          const resolvedName = resolvedFiles[index];
+          const ext = resolvedName.split('.').pop()?.toLowerCase() || 'unknown';
+
+          if (!allowedExtensions.has(ext)) {
+            invalidExtensions.add(`.${ext}`);
+            return false;
+          }
+          return true;
         });
 
-        if (Array.isArray(selected) && selected.length > 0) {
-          const invalidExtensions = new Set<string>();
-          const allowedExtensions = new Set(allImageExtensions.map((e) => e.toLowerCase()));
-
-          const resolvedFiles = await Promise.all(
-            selected.map(async (path) => {
-              if (isAndroid) {
-                try {
-                  return await invoke<string>('resolve_android_content_uri_name', { uriStr: path });
-                } catch (e) {
-                  console.error('Failed to resolve URI:', e);
-                  return path;
-                }
-              }
-              return path;
-            }),
-          );
-
-          const validFiles = selected.filter((originalPath, index) => {
-            const resolvedName = resolvedFiles[index];
-            const ext = resolvedName.split('.').pop()?.toLowerCase() || 'unknown';
-
-            if (!allowedExtensions.has(ext)) {
-              invalidExtensions.add(`.${ext}`);
-              return false;
-            }
-            return true;
-          });
-
-          if (invalidExtensions.size > 0) {
-            const extList = Array.from(invalidExtensions).join(', ');
-            toast.error(`Unsupported file format(s) detected: ${extList}`);
-            return;
-          }
-
-          if (isAndroid) {
-            const DEFAULT_IMPORT_SETTINGS = {
-              filenameTemplate: '{original_filename}',
-              organizeByDate: false,
-              dateFolderFormat: 'YYYY/MM-DD',
-              deleteAfterImport: false,
-            };
-            await startImportFiles(validFiles, targetPath, DEFAULT_IMPORT_SETTINGS);
-            return;
-          }
-
-          setUI({ importSourcePaths: validFiles, importTargetFolder: targetPath, isImportModalOpen: true });
+        if (invalidExtensions.size > 0) {
+          const extList = Array.from(invalidExtensions).join(', ');
+          toast.error(`Unsupported file format(s) detected: ${extList}`);
+          return;
         }
-      } catch (err) {
-        console.error('Failed to open file dialog for import:', err);
+
+        if (isAndroid) {
+          useProcessStore.getState().setImportState({ status: Status.Importing, errorMessage: '' });
+          await invoke(Invokes.ImportAndroidContentFiles, {
+            sourcePaths: validFiles,
+            destinationRoot: targetPath,
+          });
+          return;
+        }
+
+        setUI({ importSourcePaths: validFiles, importTargetFolder: targetPath, isImportModalOpen: true });
       }
-    },
-    [startImportFiles],
-  );
+    } catch (err) {
+      console.error('Failed to open file dialog for import:', err);
+    }
+  }, []);
 
   const handlePasteFiles = useCallback(
     async (mode = 'copy') => {
@@ -407,7 +399,6 @@ export function useFileOperations(
     handleSaveRename,
     handleRenameFiles,
     handleStartImport,
-    startImportFiles,
     handleImportClick,
     handlePasteFiles,
   };

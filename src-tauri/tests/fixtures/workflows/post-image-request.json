@@ -1,0 +1,25 @@
+{
+  "protocolVersion": 1,
+  "runId": "run-0192",
+  "workflowId": "example-post-image-receipt",
+  "phase": "postImage",
+  "sourcePath": "/home/photographer/Pictures/raw/DSC_0001.NEF",
+  "exportedPath": "/home/photographer/Pictures/export/DSC_0001.jpg",
+  "artifacts": [
+    {
+      "path": "/home/photographer/Pictures/export/DSC_0001.mask.png",
+      "kind": "mask"
+    }
+  ],
+  "selectedItems": [],
+  "exportedItems": [],
+  "exportSettings": {
+    "fileFormat": "jpeg",
+    "jpegQuality": 92,
+    "keepMetadata": true,
+    "stripGps": false
+  },
+  "index": 0,
+  "total": 12,
+  "workspaceTempDirectory": "/home/photographer/.cache/rapidraw/run-0192"
+}

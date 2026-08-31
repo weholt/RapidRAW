@@ -1,0 +1,71 @@
+version: 1
+profiles:
+  opencode:
+    provider: zai-coding-plan
+    model: zai-coding-plan/glm-5.3
+    effort: max
+    command: opencode
+    args:
+    - run
+    - --auto
+    - --agent
+    - build
+    - --format
+    - json
+    - --model
+    - '{model}'
+    - --variant
+    - '{effort}'
+    - '{prompt}'
+selection:
+  default_profile: opencode
+  rules: []
+fallback_profiles: []
+retry:
+  max_attempts_per_issue: 3
+  retry_wait_seconds: 10.0
+  rate_limit_wait_minutes: 15.0
+  recovery_wait_minutes:
+  - 5.0
+  - 10.0
+  - 30.0
+  - 60.0
+  - 300.0
+  rate_limit_patterns:
+  - rate limit
+  - rate_limit
+  - too many requests
+  - quota exceeded
+  - '429'
+review:
+  every_n_issues: 10
+  profile: opencode
+triage:
+  primary:
+    provider: zai-coding-plan
+    model: zai-coding-plan/glm-5.3
+    effort: max
+    command: opencode
+    args:
+    - run
+    - --auto
+    - --agent
+    - build
+    - --format
+    - json
+    - --model
+    - '{model}'
+    - --variant
+    - '{effort}'
+    - '{prompt}'
+  fallbacks: []
+  max_attempts_per_step: 3
+  max_questions_per_issue: 8
+git:
+  branch_prefix: pebbles-harness
+  dirty_action: ask
+  dirty_commit_message: 'chore: preserve changes before autonomous run'
+validation_commands:
+- - git
+  - diff
+  - --check

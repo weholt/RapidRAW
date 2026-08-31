@@ -66,13 +66,13 @@
       "whiteBalance": "화이트 밸런스"
     },
     "curves": {
-      "channelTitle": "{{channel}} 채널",
       "channels": {
         "blue": "파랑",
         "green": "초록",
         "luma": "루마",
         "red": "빨강"
       },
+      "channelTitle": "{{channel}} 채널",
       "copyParametric": "{{channel}} 파라메트릭 커브 복사",
       "copyPoint": "{{channel}} 포인트 커브 복사",
       "curveDataUnavailable": "커브 데이터를 사용할 수 없습니다.",
@@ -398,7 +398,8 @@
         "quickErase": "빠른 지우기 {{count}}",
         "quickErase_one": "빠른 지우기 {{count}}",
         "quickErase_other": "빠른 지우기 {{count}}",
-        "retouch": "리터칭 {{count}}"
+        "retouch": "리터칭 {{count}}",
+        "retouch_other": "리터치 {{count}}"
       },
       "resetInpaintingTooltip": "인페인팅 초기화",
       "settings": {
@@ -671,8 +672,8 @@
       "organization": {
         "addTagPlaceholder": "태그 추가...",
         "colorLabel": "색상 레이블",
-        "noTags": "태그 없음",
         "none": "없음",
+        "noTags": "태그 없음",
         "rating": "평점",
         "ratingLabels": "평점 및 레이블",
         "tags": "태그",
@@ -791,6 +792,18 @@
       "removeGps": "GPS 데이터 제거",
       "saveWithMetadata": "메타데이터와 함께 저장"
     },
+    "phase": {
+      "cancelling": "워크플로 취소 중…",
+      "discovering": "워크플로 탐색 중…",
+      "postBatch": "배치 워크플로 실행 중",
+      "postImage": "워크플로 실행 중",
+      "rendering": "이미지 렌더링 중",
+      "timeout": "{{seconds}}초 제한",
+      "waiting": "워크플로 슬롯 대기 중…",
+      "warnings_one": "경고 {{count}}건",
+      "warnings_other": "경고 {{count}}건",
+      "writing": "이미지 쓰는 중"
+    },
     "resize": {
       "dontEnlarge": "확대하지 않음",
       "modes": {
@@ -801,6 +814,24 @@
       },
       "pixels": "픽셀",
       "resizeToFit": "맞춤 크기 조정"
+    },
+    "result": {
+      "cancelled": "내보내기 취소됨",
+      "dismiss": "닫기",
+      "imageErrors": "실패한 이미지",
+      "statusCancelled": "취소됨",
+      "statusFailed": "실패",
+      "statusSucceeded": "성공",
+      "statusTimedOut": "시간 초과",
+      "statusWarned": "경고 있음",
+      "stderr": "워크플로 출력",
+      "summary": "{{total}}개 중 {{succeeded}}개 내보냄",
+      "warningPrefix": "경고",
+      "workflowFailures_one": "워크플로 실행 {{count}}건 실패",
+      "workflowFailures_other": "워크플로 실행 {{count}}건 실패",
+      "workflowRuns": "워크플로 실행",
+      "workflowWarnings_one": "워크플로 경고 {{count}}건",
+      "workflowWarnings_other": "워크플로 경고 {{count}}건"
     },
     "sections": {
       "advanced": "고급",
@@ -818,12 +849,12 @@
       "estimatedSize": "예상 파일 크기: ~{{size}}",
       "estimatedTotalSize": "예상 총 크기: ~{{size}}",
       "estimatingSize": "크기 추정 중...",
+      "exporting": "내보내는 중…",
+      "exportingProgress": "내보내는 중… ({{current}}/{{total}})",
       "exportMultiple": "{{label}} {{count}}개 내보내기",
       "exportMultiple_one": "{{label}} {{count}}개 내보내기",
       "exportMultiple_other": "{{label}} {{count}}개 내보내기",
       "exportSingle": "{{label}} 내보내기",
-      "exporting": "내보내는 중…",
-      "exportingProgress": "내보내는 중… ({{current}}/{{total}})",
       "failed": "내보내기 실패",
       "noImageSelected": "내보낼 이미지가 선택되지 않았습니다.",
       "noImagesSelected": "선택된 이미지가 없습니다.",
@@ -849,6 +880,38 @@
       "scale": "크기",
       "spacing": "간격",
       "watermarkImage": "워터마크 이미지"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "이해했으며 워크플로를 실행합니다",
+        "decline": "내보내기 취소",
+        "discoveryLocations": "워크플로는 번들 예시와 ~/.rapidraw/workflows 폴더에서 검색됩니다. 설치된 워크플로는 언제든 그곳에서 확인하거나 제거할 수 있습니다.",
+        "fullPermissions": "워크플로는 사용자의 전체 권한으로 프로그램처럼 실행됩니다. 접근 가능한 모든 파일을 읽고, 수정하고, 삭제할 수 있으며 네트워크에도 접근할 수 있습니다.",
+        "intro": "이 내보내기는 컴퓨터에서 {{selected}}개의 워크플로를 실행합니다. 첫 실행 전에 확인해 주세요:",
+        "noSandbox": "RapidRAW는 워크플로를 샌드박스하지 않습니다. 시간 제한과 출력 제한은 실행을 멈추게 할 뿐, 파일에 할 수 있는 작업을 제한하지 않습니다.",
+        "onlyTrustedSources": "신뢰할 수 있는 출처의 워크플로만 실행하세요. 알 수 없는 출처의 워크플로는 절대 설치하지 마세요.",
+        "title": "로컬 내보내기 워크플로를 실행할까요?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
@@ -882,8 +945,8 @@
       "iso": "ISO",
       "metadata": "메타데이터",
       "noMetadataAvailable": "메타데이터 없음",
-      "noTagsAdded": "추가된 태그 없음",
       "none": "없음",
+      "noTagsAdded": "추가된 태그 없음",
       "rateAndLabel": "평가 및 라벨",
       "rating": "평가",
       "selectImagesToCompare": "비교할 이미지 선택",
@@ -971,6 +1034,11 @@
       },
       "title": "라이브러리",
       "viewOptions": {
+        "captureSessions": "Capture Sessions",
+        "captureSessionsEnable": "Group by capture time",
+        "captureSessionsGap": "Maximum adjacent gap",
+        "captureSessionsMinutes_other": "{{count}} minutes",
+        "captureSessionsSliderLabel_other": "Capture session gap: {{count}} minutes",
         "currentFolder": "현재 폴더",
         "displayMode": "표시 모드",
         "exifDisabledTooltip": "이 옵션을 사용하려면 설정에서 EXIF 읽기를 활성화하세요.",
@@ -1004,6 +1072,9 @@
       "progress": "가져오는 중... ({{current}}/{{total}})"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}} images use their file modified time",
+      "captureSessionLabel": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_other": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
       "cloudPlaceholder": "iCloud에 저장됨 — 다운로드되지 않음",
       "collapseFolder": "폴더 접기",
       "currentFolder": "현재 폴더",
@@ -1073,6 +1144,11 @@
       "communityPresets": "커뮤니티 프리셋",
       "goHome": "홈으로 이동",
       "importImages": "이미지 가져오기"
+    },
+    "viewMode": {
+      "culling": "선별 보기",
+      "grid": "그리드 보기",
+      "list": "목록 보기"
     }
   },
   "masks": {
@@ -1200,9 +1276,9 @@
       "applyButton_one": "이미지 1개에 적용",
       "applyButton_other": "이미지 {{count}}개에 적용",
       "bestImage": "최고의 이미지",
+      "blurryImagesTab": "흐릿한 이미지",
       "blurThreshold": "흐림 임계값",
       "blurThresholdDesc": "선명도 점수가 이 값보다 낮은 이미지가 표시됩니다. 값이 높을수록 더 엄격합니다.",
-      "blurryImagesTab": "흐릿한 이미지",
       "cancel": "취소",
       "close": "닫기",
       "cullingFailed": "선별 실패",
@@ -1290,17 +1366,64 @@
       "title": "HDR로 병합"
     },
     "importSettings": {
+      "addLiteral": "텍스트 추가",
+      "addToken": "{{token}} 추가",
+      "androidCopyOnly": "Android 가져오기는 원본 파일 이름으로 복사됩니다. 이동은 사용할 수 없습니다.",
+      "block": "차단",
+      "buildingPreview": "확정 미리보기 생성 중…",
       "cancel": "취소",
+      "chooseSourceFolder": "원본 폴더 선택",
+      "collisionPolicy": "기존 파일",
+      "copy": "복사",
+      "copyResult": "결과 세부 정보 복사",
       "dateFormat": "날짜 형식",
       "dateFormatPlaceholder": "예: YYYY/MM-DD",
       "deleteAfterImport": "가져오기 성공 후 원본 삭제",
+      "deletePreset": "삭제",
       "deleteWarning": "파일이 시스템 휴지통으로 이동됩니다.",
+      "destination": "대상",
+      "empty": "빈 값 사용",
+      "emptyPattern": "폴더 패턴 없음",
+      "fallback": "대체 값",
+      "fallbackValue": "대체 값",
+      "filenamePattern": "파일 이름 패턴",
       "fileNaming": "파일 이름 지정",
       "folderOrganization": "폴더 정리",
+      "folderPattern": "폴더 패턴",
+      "includeSidecars": "RapidRAW 및 XMP 사이드카 포함",
+      "literalValue": "텍스트 값",
+      "metadataTokens": "메타데이터 토큰",
+      "missingTokenPolicy": "누락된 메타데이터",
+      "move": "확인된 복사 후 이동",
+      "moveLeft": "블록 왼쪽으로 이동",
+      "moveRight": "블록 오른쪽으로 이동",
+      "next": "다음",
+      "operation": "작업",
       "organizeByDate": "날짜별 하위 폴더로 정리",
+      "patternText": "패턴 텍스트",
+      "preserveTimestamps": "원본 타임스탬프 유지",
+      "preset": "가져오기 프리셋",
+      "presetName": "프리셋 이름",
+      "preview": "가져오기 미리보기",
+      "previewCount_other": "지원 파일 {{count}}개, 미지원 {{unsupported}}개",
+      "previewPrompt": "원본과 패턴을 선택하여 모든 대상 경로를 미리 확인하세요.",
+      "previous": "이전",
+      "progressPhase": "가져오기 단계: {{phase}}",
+      "recursive": "하위 폴더 포함",
+      "removeBlock": "블록 제거",
+      "renamePreset": "이름 바꾸기",
+      "renameWithSuffix": "접미사로 이름 바꾸기",
+      "resolvePreviewErrors": "차단 중인 미리보기 오류를 먼저 해결하세요",
+      "resultSummary": "{{succeeded}}개 성공, {{failed}}개 실패, 원본 {{retained}}개 유지",
+      "savePreset": "프리셋 저장",
+      "selectFolder": "원본 폴더 선택",
+      "skip": "건너뛰기",
+      "source": "원본",
       "sourceFiles": "원본 파일",
       "startImport": "가져오기 시작",
-      "title": "가져오기 설정"
+      "status": "상태",
+      "title": "가져오기 설정",
+      "useCaptureTime": "촬영 시각을 타임스탬프로 설정"
     },
     "lensCorrection": {
       "amount": "양",
@@ -1761,8 +1884,8 @@
     "tagging": {
       "addCustomPlaceholder": "사용자 지정 AI 태그 추가 (쉼표로 구분)...",
       "addCustomTooltip": "AI 태그 추가",
-      "addShortcutTooltip": "단축키 추가",
       "addShortcutsPlaceholder": "단축키 추가 (쉼표로 구분)...",
+      "addShortcutTooltip": "단축키 추가",
       "aiTagging": "AI 태그 지정",
       "aiTaggingDesc": "AI(CLIP) 모델을 사용한 자동 이미지 태그 지정을 활성화합니다. 추가 모델을 다운로드하며 폴더를 탐색하는 동안 성능에 영향을 줍니다. 태그는 폴더 검색에 사용됩니다.",
       "amount": "양",

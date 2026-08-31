@@ -66,13 +66,13 @@
       "whiteBalance": "白平衡"
     },
     "curves": {
-      "channelTitle": "{{channel}} 通道",
       "channels": {
         "blue": "藍色",
         "green": "綠色",
         "luma": "亮度",
         "red": "紅色"
       },
+      "channelTitle": "{{channel}} 通道",
       "copyParametric": "複製 {{channel}} 參數曲線",
       "copyPoint": "複製 {{channel}} 點曲線",
       "curveDataUnavailable": "曲線資料不可用。",
@@ -398,7 +398,8 @@
         "quickErase": "快速擦除 {{count}}",
         "quickErase_one": "快速擦除 {{count}}",
         "quickErase_other": "快速擦除 {{count}}",
-        "retouch": "修飾 {{count}}"
+        "retouch": "修飾 {{count}}",
+        "retouch_other": "修飾 {{count}}"
       },
       "resetInpaintingTooltip": "重置影像修復",
       "settings": {
@@ -671,8 +672,8 @@
       "organization": {
         "addTagPlaceholder": "新增標籤...",
         "colorLabel": "顏色標籤",
-        "noTags": "無標籤",
         "none": "無",
+        "noTags": "無標籤",
         "rating": "評分",
         "ratingLabels": "評分與標籤",
         "tags": "標籤",
@@ -791,6 +792,18 @@
       "removeGps": "移除 GPS 資料",
       "saveWithMetadata": "儲存時包含後設資料"
     },
+    "phase": {
+      "cancelling": "正在取消工作流程…",
+      "discovering": "正在探索工作流程…",
+      "postBatch": "正在執行批次工作流程",
+      "postImage": "正在執行工作流程",
+      "rendering": "正在渲染影像",
+      "timeout": "{{seconds}}秒逾時",
+      "waiting": "正在等待工作流程位置…",
+      "warnings_one": "{{count}}個警告",
+      "warnings_other": "{{count}}個警告",
+      "writing": "正在寫入影像"
+    },
     "resize": {
       "dontEnlarge": "不放大",
       "modes": {
@@ -801,6 +814,24 @@
       },
       "pixels": "畫素",
       "resizeToFit": "調整大小以適應"
+    },
+    "result": {
+      "cancelled": "匯出已取消",
+      "dismiss": "關閉",
+      "imageErrors": "失敗的影像",
+      "statusCancelled": "已取消",
+      "statusFailed": "失敗",
+      "statusSucceeded": "成功",
+      "statusTimedOut": "逾時",
+      "statusWarned": "有警告",
+      "stderr": "工作流程輸出",
+      "summary": "已匯出 {{total}} 張中的 {{succeeded}} 張",
+      "warningPrefix": "警告",
+      "workflowFailures_one": "{{count}}個工作流程執行失敗",
+      "workflowFailures_other": "{{count}}個工作流程執行失敗",
+      "workflowRuns": "工作流程執行",
+      "workflowWarnings_one": "{{count}}個工作流程警告",
+      "workflowWarnings_other": "{{count}}個工作流程警告"
     },
     "sections": {
       "advanced": "高階",
@@ -818,12 +849,12 @@
       "estimatedSize": "預計檔案大小：約 {{size}}",
       "estimatedTotalSize": "預計總大小：約 {{size}}",
       "estimatingSize": "正在估算大小...",
+      "exporting": "匯出中…",
+      "exportingProgress": "匯出中…（{{current}}/{{total}}）",
       "exportMultiple": "匯出 {{count}} {{label}}",
       "exportMultiple_one": "匯出 {{count}} {{label}}",
       "exportMultiple_other": "匯出 {{count}} {{label}}",
       "exportSingle": "匯出 {{label}}",
-      "exporting": "匯出中…",
-      "exportingProgress": "匯出中…（{{current}}/{{total}}）",
       "failed": "匯出失敗",
       "noImageSelected": "未選擇要匯出的影像。",
       "noImagesSelected": "未選擇影像。",
@@ -849,6 +880,38 @@
       "scale": "縮放",
       "spacing": "間距",
       "watermarkImage": "水印影像"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "我已了解，執行工作流程",
+        "decline": "取消匯出",
+        "discoveryLocations": "工作流程來自內建範例與您的 ~/.rapidraw/workflows 資料夾。您可以隨時在該處檢視或移除已安裝的工作流程。",
+        "fullPermissions": "工作流程會以您的完整使用者權限作為程式執行：可以讀取、修改與刪除您可存取的任何檔案，並可存取網路。",
+        "intro": "本次匯出將在您的電腦上執行 {{selected}} 個工作流程。首次執行前請確認：",
+        "noSandbox": "RapidRAW 不會對工作流程進行沙箱隔離。逾時與輸出限制只會中止執行，並不限制工作流程對您檔案的操作。",
+        "onlyTrustedSources": "僅執行來自可信來源的工作流程。切勿安裝來路不明的工作流程。",
+        "title": "執行本機匯出工作流程？"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
@@ -882,8 +945,8 @@
       "iso": "ISO",
       "metadata": "中繼資料",
       "noMetadataAvailable": "無可用中繼資料",
-      "noTagsAdded": "未新增標籤",
       "none": "無",
+      "noTagsAdded": "未新增標籤",
       "rateAndLabel": "評分與標籤",
       "rating": "評分",
       "selectImagesToCompare": "選擇要比較的影像",
@@ -971,6 +1034,11 @@
       },
       "title": "相簿",
       "viewOptions": {
+        "captureSessions": "擷取工作階段",
+        "captureSessionsEnable": "按擷取時間分組",
+        "captureSessionsGap": "最大相鄰間隙",
+        "captureSessionsMinutes_other": "{{count}}分",
+        "captureSessionsSliderLabel_other": "擷取工作階段間隙： {{count}}分鐘",
         "currentFolder": "當前資料夾",
         "displayMode": "顯示模式",
         "exifDisabledTooltip": "在設定中啟用 EXIF 讀取以使用此選項。",
@@ -1004,6 +1072,9 @@
       "progress": "匯入中...（{{current}}/{{total}}）"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}}圖像使用其文件修改時間",
+      "captureSessionLabel": "擷取工作階段{{range}}、{{count}}影像、{{fallbackCount}}檔案時間回退",
+      "captureSessionLabel_other": "擷取工作階段{{range}}、{{count}}影像、{{fallbackCount}}檔案時間回退",
       "cloudPlaceholder": "儲存在 iCloud 中 — 未下載",
       "collapseFolder": "摺疊資料夾",
       "currentFolder": "當前資料夾",
@@ -1073,6 +1144,11 @@
       "communityPresets": "社群預設",
       "goHome": "返回首頁",
       "importImages": "匯入影像"
+    },
+    "viewMode": {
+      "culling": "篩選檢視",
+      "grid": "網格檢視",
+      "list": "清單檢視"
     }
   },
   "masks": {
@@ -1200,9 +1276,9 @@
       "applyButton_one": "應用到 1 張影像",
       "applyButton_other": "應用到 {{count}} 張影像",
       "bestImage": "最佳影像",
+      "blurryImagesTab": "模糊影像",
       "blurThreshold": "模糊臨界值",
       "blurThresholdDesc": "銳度評分低於此值的影像將被標記。值越高越嚴格。",
-      "blurryImagesTab": "模糊影像",
       "cancel": "取消",
       "close": "關閉",
       "cullingFailed": "篩選失敗",
@@ -1290,17 +1366,64 @@
       "title": "合併為 HDR"
     },
     "importSettings": {
+      "addLiteral": "新增文字",
+      "addToken": "添加{{token}}",
+      "androidCopyOnly": "Android會匯入原始名稱的複本檔案。移動無法使用。",
+      "block": "阻止",
+      "buildingPreview": "正在建立權威預覽…",
       "cancel": "取消",
+      "chooseSourceFolder": "選擇來源資料夾",
+      "collisionPolicy": "現有檔案",
+      "copy": "復制",
+      "copyResult": "複製結果詳情",
       "dateFormat": "日期格式",
       "dateFormatPlaceholder": "例如，YYYY/MM-DD",
       "deleteAfterImport": "成功匯入後刪除原始檔案",
+      "deletePreset": "刪除",
       "deleteWarning": "檔案將被移至垃圾桶。",
+      "destination": "目的地",
+      "empty": "使用空值",
+      "emptyPattern": "沒有資料夾模式",
+      "fallback": "回退",
+      "fallbackValue": "回退值",
+      "filenamePattern": "文件名模式",
       "fileNaming": "檔案命名",
       "folderOrganization": "資料夾組織",
+      "folderPattern": "資料夾模式",
+      "includeSidecars": "包括RapidRAW和XMP Sidecar",
+      "literalValue": "文本值",
+      "metadataTokens": "中繼資料權杖",
+      "missingTokenPolicy": "缺少元數據",
+      "move": "在已驗證副本之後移動",
+      "moveLeft": "向左移動區塊",
+      "moveRight": "向右移動區塊",
+      "next": "下一步",
+      "operation": "操作",
       "organizeByDate": "按日期組織到子資料夾",
+      "patternText": "圖案文字",
+      "preserveTimestamps": "保留來源時間戳記",
+      "preset": "匯入預設值",
+      "presetName": "預設值名稱",
+      "preview": "匯入預覽",
+      "previewCount_other": "{{count}}支持的文件； {{unsupported}}不支持",
+      "previewPrompt": "選擇來源和模式以預覽每個目的地。",
+      "previous": "上一步",
+      "progressPhase": "匯入階段： {{phase}}",
+      "recursive": "包含子資料夾",
+      "removeBlock": "移除區塊",
+      "renamePreset": "重命名",
+      "renameWithSuffix": "使用後綴重新命名",
+      "resolvePreviewErrors": "先解決封鎖預覽錯誤",
+      "resultSummary": "{{succeeded}}成功， {{failed}}失敗， {{retained}}源保留",
+      "savePreset": "儲存預設值",
+      "selectFolder": "選擇來源資料夾",
+      "skip": "略過",
+      "source": "來源",
       "sourceFiles": "原始檔",
       "startImport": "開始匯入",
-      "title": "匯入設定"
+      "status": "狀態",
+      "title": "匯入設定",
+      "useCaptureTime": "設定擷取時間的時間戳記"
     },
     "lensCorrection": {
       "amount": "數量",
@@ -1761,8 +1884,8 @@
     "tagging": {
       "addCustomPlaceholder": "新增自定義 AI 標籤（逗號分隔）...",
       "addCustomTooltip": "新增 AI 標籤",
-      "addShortcutTooltip": "新增快捷方式",
       "addShortcutsPlaceholder": "新增快捷方式（逗號分隔）...",
+      "addShortcutTooltip": "新增快捷方式",
       "aiTagging": "AI 標籤",
       "aiTaggingDesc": "使用 AI（CLIP）模型啟用自動影像標籤。這將下載額外的模型，並在瀏覽資料夾時影響效能。標籤用於搜尋資料夾。",
       "amount": "數量",
