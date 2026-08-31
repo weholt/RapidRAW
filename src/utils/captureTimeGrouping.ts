@@ -93,11 +93,39 @@ const stableHash = (value: string): string => {
   return (hash >>> 0).toString(36);
 };
 
+export const DEFAULT_CAPTURE_GAP_SECONDS = 900;
+
+const SUB_MINUTE_GAP_LADDER = [3, 5, 10, 30];
+
+export const CAPTURE_GAP_LADDER_SECONDS: readonly number[] = [
+  ...SUB_MINUTE_GAP_LADDER,
+  ...Array.from({ length: 120 }, (_, index) => (index + 1) * 60),
+];
+
+export const snapToCaptureGapSeconds = (seconds: number): number => {
+  if (!Number.isFinite(seconds)) return DEFAULT_CAPTURE_GAP_SECONDS;
+  const target = Math.round(seconds);
+  let best = CAPTURE_GAP_LADDER_SECONDS[0];
+  for (const candidate of CAPTURE_GAP_LADDER_SECONDS) {
+    if (Math.abs(target - candidate) < Math.abs(target - best)) best = candidate;
+  }
+  return best;
+};
+
+export const captureGapSecondsForSettings = (
+  seconds: number | undefined,
+  legacyMinutes: number | undefined,
+): number => {
+  if (seconds !== undefined) return snapToCaptureGapSeconds(seconds);
+  const minutes = legacyMinutes ?? DEFAULT_CAPTURE_GAP_SECONDS / 60;
+  return snapToCaptureGapSeconds(minutes * 60);
+};
+
 export const groupImagesIntoCaptureSessions = (
   images: readonly ImageFile[],
-  thresholdMinutes: number,
+  thresholdSeconds: number,
 ): CaptureSession[] => {
-  const thresholdMs = Math.max(1, Math.min(120, Math.round(thresholdMinutes))) * 60_000;
+  const thresholdMs = Math.max(1, Math.min(7200, Math.round(thresholdSeconds))) * 1000;
   const folders = new Map<string, Array<{ image: ImageFile; capture: EffectiveCaptureTime; normalizedPath: string }>>();
 
   for (const image of images) {

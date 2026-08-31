@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ImageFile } from '../components/ui/AppProperties';
-import { captureInstantForImage, groupImagesIntoCaptureSessions } from './captureTimeGrouping';
+import {
+  CAPTURE_GAP_LADDER_SECONDS,
+  captureInstantForImage,
+  groupImagesIntoCaptureSessions,
+  snapToCaptureGapSeconds,
+} from './captureTimeGrouping';
 
 const image = (
   path: string,
@@ -65,13 +70,37 @@ describe('captureTimeGrouping', () => {
       image('C:\\shoot\\d.jpg', '2024:01:01 10:45:00'),
     ];
     const original = [...input];
-    const sessions = groupImagesIntoCaptureSessions(input, 15);
+    const sessions = groupImagesIntoCaptureSessions(input, 900);
 
     expect(sessions.map((session) => session.images.map((item) => item.path))).toEqual([
       ['C:\\shoot\\a.jpg', 'C:\\shoot\\b.jpg'],
       ['C:\\shoot\\c.jpg', 'C:\\shoot\\d.jpg'],
     ]);
     expect(input).toEqual(original);
+  });
+
+  it('supports sub-minute thresholds for burst grouping', () => {
+    const input = [
+      image('C:\\burst\\a.jpg', '2024:01:01 10:00:00'),
+      image('C:\\burst\\b.jpg', '2024:01:01 10:00:04'),
+      image('C:\\burst\\c.jpg', '2024:01:01 10:00:08'),
+    ];
+
+    expect(groupImagesIntoCaptureSessions(input, 5)).toHaveLength(1);
+    expect(groupImagesIntoCaptureSessions(input, 3)).toHaveLength(3);
+  });
+
+  it('exposes the gap ladder and snaps arbitrary values onto it', () => {
+    expect(CAPTURE_GAP_LADDER_SECONDS.slice(0, 5)).toEqual([3, 5, 10, 30, 60]);
+    expect(CAPTURE_GAP_LADDER_SECONDS.at(-1)).toBe(7200);
+    expect(CAPTURE_GAP_LADDER_SECONDS).toContain(3600);
+    expect(snapToCaptureGapSeconds(4)).toBe(3);
+    expect(snapToCaptureGapSeconds(7)).toBe(5);
+    expect(snapToCaptureGapSeconds(45)).toBe(30);
+    expect(snapToCaptureGapSeconds(47)).toBe(60);
+    expect(snapToCaptureGapSeconds(900)).toBe(900);
+    expect(snapToCaptureGapSeconds(0)).toBe(3);
+    expect(snapToCaptureGapSeconds(999_999)).toBe(7200);
   });
 
   it('separates folders, counts fallbacks, and resolves ties by normalized path', () => {
@@ -81,7 +110,7 @@ describe('captureTimeGrouping', () => {
         image('C:\\A\\z.jpg', '2024:01:01 10:00:00'),
         image('c:/a/A.jpg', '2024:01:01 10:00:00'),
       ],
-      120,
+      7200,
     );
 
     expect(sessions).toHaveLength(2);
@@ -91,10 +120,10 @@ describe('captureTimeGrouping', () => {
 
   it('keeps IDs stable when an unrelated session is added', () => {
     const base = [image('/photos/a.jpg', '2024:01:01 10:00:00'), image('/photos/b.jpg', '2024:01:01 10:05:00')];
-    const originalId = groupImagesIntoCaptureSessions(base, 15)[0].id;
+    const originalId = groupImagesIntoCaptureSessions(base, 900)[0].id;
     const withUnrelated = groupImagesIntoCaptureSessions(
       [...base, image('/photos/later.jpg', '2024:01:01 20:00:00')],
-      15,
+      900,
     );
     expect(withUnrelated[0].id).toBe(originalId);
   });
@@ -104,7 +133,7 @@ describe('captureTimeGrouping', () => {
       image(`/large/${String(index).padStart(5, '0')}.jpg`, undefined, 1_700_000_000 + index * 60),
     );
     const started = performance.now();
-    const sessions = groupImagesIntoCaptureSessions(input, 15);
+    const sessions = groupImagesIntoCaptureSessions(input, 900);
     const elapsed = performance.now() - started;
 
     expect(sessions).toHaveLength(1);

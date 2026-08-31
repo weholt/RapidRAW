@@ -16,6 +16,27 @@ import { ViewOptionsDropdown } from './LibraryHeader';
 const invoke = vi.fn().mockResolvedValue(undefined);
 vi.mock('@tauri-apps/api/core', () => ({ invoke: (...args: unknown[]) => invoke(...args) }));
 
+const renderViewOptions = () =>
+  render(
+    <ViewOptionsDropdown
+      libraryViewMode={LibraryViewMode.Flat}
+      onSelectSize={() => {}}
+      onSelectAspectRatio={() => {}}
+      setLibraryViewMode={() => {}}
+      thumbnailSize={ThumbnailSize.Medium}
+      thumbnailAspectRatio={ThumbnailAspectRatio.Cover}
+      thumbnailSizeOptions={[{ id: ThumbnailSize.Medium, label: 'Medium', size: 240 }]}
+      thumbnailAspectRatioOptions={[{ id: ThumbnailAspectRatio.Cover, label: 'Cover' }]}
+      ratingFilterOptions={[{ value: 0, label: 'All' }]}
+      rawStatusOptions={[{ key: RawStatus.All, label: 'All' }]}
+      editedStatusOptions={[{ key: EditedStatus.All, label: 'All' }]}
+      sortOptions={[
+        { key: 'name', label: 'Name' },
+        { key: 'date_taken', label: 'Date Taken' },
+      ]}
+    />,
+  );
+
 describe('capture-session controls', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -25,7 +46,7 @@ describe('capture-session controls', () => {
         lastRootPath: null,
         theme: Theme.Dark,
         captureTimeGroupingEnabled: false,
-        captureTimeGroupingMinutes: 15,
+        captureTimeGroupingSeconds: 900,
       },
     });
     useLibraryStore.setState({
@@ -37,40 +58,37 @@ describe('capture-session controls', () => {
   afterEach(() => vi.useRealTimers());
 
   it('updates the view immediately and debounces persisted slider writes', () => {
-    const { container } = render(
-      <ViewOptionsDropdown
-        libraryViewMode={LibraryViewMode.Flat}
-        onSelectSize={() => {}}
-        onSelectAspectRatio={() => {}}
-        setLibraryViewMode={() => {}}
-        thumbnailSize={ThumbnailSize.Medium}
-        thumbnailAspectRatio={ThumbnailAspectRatio.Cover}
-        thumbnailSizeOptions={[{ id: ThumbnailSize.Medium, label: 'Medium', size: 240 }]}
-        thumbnailAspectRatioOptions={[{ id: ThumbnailAspectRatio.Cover, label: 'Cover' }]}
-        ratingFilterOptions={[{ value: 0, label: 'All' }]}
-        rawStatusOptions={[{ key: RawStatus.All, label: 'All' }]}
-        editedStatusOptions={[{ key: EditedStatus.All, label: 'All' }]}
-        sortOptions={[
-          { key: 'name', label: 'Name' },
-          { key: 'date_taken', label: 'Date Taken' },
-        ]}
-      />,
-    );
+    const { container } = renderViewOptions();
 
     fireEvent.click(container.querySelector('[data-tooltip="View Options"]')!);
     fireEvent.click(screen.getByRole('checkbox', { name: 'Group by capture time' }));
     expect(useSettingsStore.getState().appSettings?.captureTimeGroupingEnabled).toBe(true);
 
     const slider = screen.getByRole('slider', { name: 'Capture session gap: 15 minutes' });
-    fireEvent.change(slider, { target: { value: '42' } });
-    expect(useSettingsStore.getState().appSettings?.captureTimeGroupingMinutes).toBe(42);
-    expect(screen.getByRole('slider', { name: 'Capture session gap: 42 minutes' })).toBeInTheDocument();
+    fireEvent.change(slider, { target: { value: '0' } });
+    expect(useSettingsStore.getState().appSettings?.captureTimeGroupingSeconds).toBe(3);
+    expect(screen.getByRole('slider', { name: 'Capture session gap: 3 seconds' })).toBeInTheDocument();
     expect(invoke).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(350);
     expect(invoke).toHaveBeenCalledTimes(1);
     expect(invoke.mock.calls[0][1]).toMatchObject({
-      settings: { captureTimeGroupingEnabled: true, captureTimeGroupingMinutes: 42 },
+      settings: { captureTimeGroupingEnabled: true, captureTimeGroupingSeconds: 3 },
     });
+  });
+
+  it('falls back to legacy minute settings when no seconds value is stored', () => {
+    useSettingsStore.setState({
+      appSettings: {
+        lastRootPath: null,
+        theme: Theme.Dark,
+        captureTimeGroupingEnabled: true,
+        captureTimeGroupingMinutes: 42,
+      },
+    });
+    const { container } = renderViewOptions();
+
+    fireEvent.click(container.querySelector('[data-tooltip="View Options"]')!);
+    expect(screen.getByRole('slider', { name: 'Capture session gap: 42 minutes' })).toBeInTheDocument();
   });
 });

@@ -3,7 +3,11 @@ import { useLibraryStore } from '../store/useLibraryStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { RawStatus, EditedStatus, SortDirection, ImageFile, GroupingMode } from '../components/ui/AppProperties';
 import { buildImageGroups, GroupBadgeInfo, GroupId } from '../utils/imageGrouping';
-import { CaptureSession, groupImagesIntoCaptureSessions } from '../utils/captureTimeGrouping';
+import {
+  captureGapSecondsForSettings,
+  CaptureSession,
+  groupImagesIntoCaptureSessions,
+} from '../utils/captureTimeGrouping';
 
 export const ADVANCED_QUERY_REGEX =
   /^(iso|aperture|f|shutter|s|focal|mm|rating|color|camera|make|model|lens)\s*(?::)?\s*(>=|<=|>|<|=)?\s*(.+)$/i;
@@ -259,7 +263,10 @@ export function computeGroupedLibrary(libraryState: any, settingsState: any): Gr
   };
 
   const captureSessions = appSettings?.captureTimeGroupingEnabled
-    ? groupImagesIntoCaptureSessions(list, appSettings?.captureTimeGroupingMinutes ?? 15)
+    ? groupImagesIntoCaptureSessions(
+        list,
+        captureGapSecondsForSettings(appSettings?.captureTimeGroupingSeconds, appSettings?.captureTimeGroupingMinutes),
+      )
     : [];
 
   if (captureSessions.length > 0) {

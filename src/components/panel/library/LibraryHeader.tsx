@@ -36,6 +36,7 @@ import Dropdown from '../../ui/Dropdown';
 import { useSettingsStore } from '../../../store/useSettingsStore';
 import { useUIStore } from '../../../store/useUIStore';
 import { ADVANCED_QUERY_REGEX } from '../../../hooks/useSortedLibrary';
+import { CAPTURE_GAP_LADDER_SECONDS, captureGapSecondsForSettings } from '../../../utils/captureTimeGrouping';
 import debounce from 'lodash.debounce';
 
 function DropdownMenu({ buttonContent, buttonTitle, children, contentClassName = 'w-56' }: any) {
@@ -526,7 +527,14 @@ export function ViewOptionsDropdown({
   const groupingMode: GroupingMode = appSettings?.grouping ?? 'off';
   const requireMatchingExif = appSettings?.requireMatchingExif ?? false;
   const captureGroupingEnabled = appSettings?.captureTimeGroupingEnabled ?? false;
-  const captureGroupingMinutes = Math.max(1, Math.min(120, Math.round(appSettings?.captureTimeGroupingMinutes ?? 15)));
+  const captureGapSeconds = captureGapSecondsForSettings(
+    appSettings?.captureTimeGroupingSeconds,
+    appSettings?.captureTimeGroupingMinutes,
+  );
+  const captureGapLabel =
+    captureGapSeconds < 60
+      ? t('library.header.viewOptions.captureSessionsSeconds', { count: captureGapSeconds })
+      : t('library.header.viewOptions.captureSessionsMinutes', { count: captureGapSeconds / 60 });
 
   const persistCaptureSettings = useMemo(
     () => debounce((settings: NonNullable<typeof appSettings>) => handleSettingsChange(settings), 350),
@@ -810,29 +818,31 @@ export function ViewOptionsDropdown({
                     exit={{ opacity: 0, height: 0 }}
                     className="overflow-hidden px-1"
                   >
-                    <label htmlFor="capture-time-grouping-minutes" className="flex items-center justify-between">
+                    <label htmlFor="capture-time-grouping-gap" className="flex items-center justify-between">
                       <Text variant={TextVariants.small} color={TextColors.secondary}>
                         {t('library.header.viewOptions.captureSessionsGap')}
                       </Text>
                       <Text variant={TextVariants.small} weight={TextWeights.semibold}>
-                        {t('library.header.viewOptions.captureSessionsMinutes', { count: captureGroupingMinutes })}
+                        {captureGapLabel}
                       </Text>
                     </label>
                     <input
-                      id="capture-time-grouping-minutes"
+                      id="capture-time-grouping-gap"
                       type="range"
-                      min={1}
-                      max={120}
+                      min={0}
+                      max={CAPTURE_GAP_LADDER_SECONDS.length - 1}
                       step={1}
-                      value={captureGroupingMinutes}
+                      value={Math.max(0, CAPTURE_GAP_LADDER_SECONDS.indexOf(captureGapSeconds))}
                       aria-label={t('library.header.viewOptions.captureSessionsSliderLabel', {
-                        count: captureGroupingMinutes,
+                        gap: captureGapLabel,
                       })}
-                      onChange={(event) =>
-                        updateCaptureSettings({
-                          captureTimeGroupingMinutes: Math.max(1, Math.min(120, Number(event.target.value))),
-                        })
-                      }
+                      onChange={(event) => {
+                        const index = Math.max(
+                          0,
+                          Math.min(CAPTURE_GAP_LADDER_SECONDS.length - 1, Number(event.target.value)),
+                        );
+                        updateCaptureSettings({ captureTimeGroupingSeconds: CAPTURE_GAP_LADDER_SECONDS[index] });
+                      }}
                       className="w-full accent-accent"
                     />
                   </motion.div>

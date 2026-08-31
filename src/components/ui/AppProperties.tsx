@@ -252,7 +252,8 @@ export interface AppSettings {
   requireMatchingExif?: boolean;
   groupEditedFiles?: boolean;
   captureTimeGroupingEnabled?: boolean;
-  captureTimeGroupingMinutes?: number;
+  captureTimeGroupingSeconds?: number;
+  captureTimeGroupingMinutes?: number; // legacy
   groupPreferredType?: GroupPreference; // legacy
   alwaysDecodeRawThumbnails?: boolean;
   workspace?: WorkspaceState;

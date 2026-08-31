@@ -451,6 +451,15 @@ pub fn default_capture_time_grouping_minutes() -> u32 {
     15
 }
 
+pub fn migrate_capture_gap_seconds(settings: &mut AppSettings) -> bool {
+    if settings.capture_time_grouping_seconds.is_some() {
+        return false;
+    }
+    settings.capture_time_grouping_seconds =
+        Some(settings.capture_time_grouping_minutes.clamp(1, 120) * 60);
+    true
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
@@ -579,6 +588,8 @@ pub struct AppSettings {
     pub capture_time_grouping_enabled: bool,
     #[serde(default = "default_capture_time_grouping_minutes")]
     pub capture_time_grouping_minutes: u32,
+    #[serde(default)]
+    pub capture_time_grouping_seconds: Option<u32>,
     #[serde(default, skip_serializing)] // legacy
     #[allow(dead_code)]
     pub group_associated_files: Option<bool>,
@@ -681,6 +692,7 @@ impl Default for AppSettings {
             group_edited_files: Some(true),
             capture_time_grouping_enabled: false,
             capture_time_grouping_minutes: default_capture_time_grouping_minutes(),
+            capture_time_grouping_seconds: None,
             group_associated_files: Some(false),
             group_preferred_type: Some("raw".to_string()),
             always_decode_raw_thumbnails: Some(false),
@@ -721,6 +733,10 @@ pub fn load_settings(app_handle: AppHandle) -> Result<AppSettings, String> {
     let all_current_keys = all_available_adjustments();
     let default_included = default_included_adjustments();
     let mut settings_modified = false;
+
+    if migrate_capture_gap_seconds(&mut settings) {
+        settings_modified = true;
+    }
 
     if settings.root_folders.is_empty()
         && let Some(last) = &settings.last_root_path
@@ -800,11 +816,30 @@ mod tests {
         let object = old_settings.as_object_mut().expect("settings object");
         object.remove("captureTimeGroupingEnabled");
         object.remove("captureTimeGroupingMinutes");
+        object.remove("captureTimeGroupingSeconds");
 
         let decoded: AppSettings = serde_json::from_value(old_settings).expect("old settings load");
 
         assert!(!decoded.capture_time_grouping_enabled);
         assert_eq!(decoded.capture_time_grouping_minutes, 15);
+        assert_eq!(decoded.capture_time_grouping_seconds, None);
+    }
+
+    #[test]
+    fn legacy_capture_gap_minutes_migrate_to_seconds() {
+        let mut settings = AppSettings {
+            capture_time_grouping_seconds: None,
+            capture_time_grouping_minutes: 42,
+            ..AppSettings::default()
+        };
+
+        migrate_capture_gap_seconds(&mut settings);
+
+        assert_eq!(settings.capture_time_grouping_seconds, Some(42 * 60));
+
+        settings.capture_time_grouping_minutes = 15;
+        migrate_capture_gap_seconds(&mut settings);
+        assert_eq!(settings.capture_time_grouping_seconds, Some(42 * 60));
     }
 
     #[test]

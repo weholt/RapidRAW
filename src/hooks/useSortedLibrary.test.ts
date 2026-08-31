@@ -33,7 +33,7 @@ const derive = (
       appSettings: {
         grouping: 'off',
         captureTimeGroupingEnabled: true,
-        captureTimeGroupingMinutes: 15,
+        captureTimeGroupingSeconds: 900,
         ...appSettings,
       },
     },
@@ -99,7 +99,7 @@ describe('capture sessions in the derived library', () => {
       sortCriteria,
     };
     computeGroupedLibrary(state, {
-      appSettings: { grouping: 'off', captureTimeGroupingEnabled: true, captureTimeGroupingMinutes: 15 },
+      appSettings: { grouping: 'off', captureTimeGroupingEnabled: true, captureTimeGroupingSeconds: 900 },
     });
     expect(state.sortCriteria).toBe(sortCriteria);
   });
