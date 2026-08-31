@@ -1,13 +1,56 @@
 # AGENTS.md
 
-Agent instructions for RapidRAW (Tauri 2 + React RAW editor). Seeded by rapidraw-3cb
-with the Rust toolchain section; rapidraw-e3d expands this file with the full canonical
-command set, CI entry points, and the RED-GREEN Pebbles workflow.
+Agent instructions for RapidRAW (Tauri 2 + React RAW editor). Rust toolchain section
+seeded by rapidraw-3cb; canonical command set, CI entry points, and the RED-GREEN
+Pebbles workflow added by rapidraw-e3d.
 
 ## Project purpose
 
 RapidRAW is a GPU-accelerated, non-destructive RAW photo editor. Rust backend in
 `src-tauri/` (edition 2024, MSRV 1.98), TypeScript/React frontend in `src/`.
+
+## Canonical quality gates
+
+Run these before declaring any work done. Frontend commands run from the repo root
+and match the `scripts` in `package.json`:
+
+```powershell
+npm test              # vitest run
+npm run typecheck     # tsc --noEmit
+npm run lint          # eslint .
+npm run format:check  # prettier --check .
+npm run i18n:check    # i18next extraction sync + runtime key check
+```
+
+Fixers when needed: `npm run lint:fix`, `npm run format`, `npm run i18n:extract`.
+
+Rust gates (only after the PATH prepend from the toolchain section below):
+
+```powershell
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets
+```
+
+Do not use `--all-features` locally on Windows: the `tethering` feature gates
+libgphoto2 and only builds on Linux (see CI section).
+
+## CI entry points
+
+- `.github/workflows/lint.yml` — **Lint**, on PRs and pushes to `main`. The local
+  mirror of its steps:
+  - `frontend-lint` job: `npm ci`, then `npm test`, `npm run typecheck`, followed by
+    `npm run format:check`, `npm run lint`, `npm run i18n:check` (those last three are
+    `continue-on-error` today, so treat local runs as the real gate).
+  - `fmt` job: `cargo fmt -p RapidRAW -- --check` from `src-tauri/`.
+  - `test` job: `cargo test --manifest-path src-tauri/Cargo.toml` on Ubuntu with the
+    Tauri system deps (webkit2gtk, appindicator, librsvg).
+  - `clippy` job: `cargo clippy --all-targets --all-features -- -D warnings` on Ubuntu
+    with `libgphoto2-dev` — the only place `--all-features` runs.
+- `.github/workflows/pr-ci.yml` — full cross-platform build matrix on every PR.
+- `.github/workflows/ci.yml` — same matrix on pushes to `main`.
+- `.github/workflows/build.yml` — reusable `workflow_call` target used by both matrices.
+- `.github/workflows/release.yml` — packages and uploads app bundles on GitHub releases.
 
 ## Rust toolchain on this Windows machine — read before any cargo command
 
@@ -85,8 +128,27 @@ still be used by absolute path if ever needed.
   selected by `rust-toolchain.toml`; the machine-local pin is gitignored and never
   leaves this machine.
 
+## Pebbles workflow (RED-GREEN)
+
+`.pebbles/events.jsonl` is the durable, append-only work record. All issue state
+lives there and is mutated only through the `pb` CLI — never hand-edit the log.
+
+1. Pick the issue with `pb ready` / `pb show <id>`, then
+   `pb update <id> --status in_progress` before touching code.
+2. **RED** — write the failing test first, run the matching canonical gate, and
+   record the failure as evidence: `pb comment <id> --body "RED: <command + observed failure>"`.
+3. **GREEN** — make the test pass with the least change, rerun the gate, and
+   record the passing run: `pb comment <id> --body "GREEN: <command + observed pass>"`.
+4. **REFACTOR** only while the gates stay green; rerun the gates after.
+5. `pb close <id>` only when the issue's acceptance criteria and verification
+   steps pass, and reference the issue ID in the commit message.
+
+Issue IDs may appear in docs (like the provenance line at the top of this file)
+as process history only — never as a status report or backlog copy.
+
 ## Safety
 
 - Never commit `.cargo/config.toml`, `src-tauri/target/`, or other machine-local state.
 - Do not hand-edit `.pebbles/events.jsonl`; mutate Pebbles only through the `pb` CLI.
 - Keep changes scoped to the active Pebbles issue and reference its ID in commits.
+- No secrets, volatile status, or backlog copies in agent docs — process only.

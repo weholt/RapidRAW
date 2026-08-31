@@ -15,17 +15,17 @@ manual exports use `public/splash-light.jpg`. No private photographs or metadata
 Local run (Windows 11, Rust 1.98 via rustup, Node 22, 2026-08-31, branch
 `pebbles-harness/20260830-144016`):
 
-| Gate                         | Result | Notes                                                                                               |
-| ---------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
-| `npm test`                   | PASS   | 77 tests / 17 files                                                                                 |
-| `npm run typecheck`          | PASS   |                                                                                                     |
-| `npm run build`              | PASS   | 2557 modules                                                                                        |
-| `npm run i18n:check`         | PASS   | 1395 plural resolutions, 13 locales, extraction clean                                               |
-| `npm run format:check`       | DRIFT  | Pre-existing repo-wide (164 files); all new/feature files pass                                      |
-| `npm run lint`               | DRIFT  | Pre-existing repo-wide failures; touched files improved 409→401 errors vs main; all new files clean |
-| `cargo fmt -- --check`       | PASS   |                                                                                                     |
-| `cargo clippy --all-targets` | PASS   | `--all-features` is Linux-only (tethering/libgphoto2); enforced in CI `lint.yml`                    |
-| `cargo test`                 | PASS   | 57 unit + 73 integration tests                                                                      |
+| Gate                         | Result | Notes                                                                                                                                                                                                                                            |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm test`                   | PASS   | 77 tests / 17 files                                                                                                                                                                                                                              |
+| `npm run typecheck`          | PASS   |                                                                                                                                                                                                                                                  |
+| `npm run build`              | PASS   | 2557 modules                                                                                                                                                                                                                                     |
+| `npm run i18n:check`         | PASS   | 1395 plural resolutions, 13 locales, extraction clean                                                                                                                                                                                            |
+| `npm run format:check`       | DRIFT  | 207 files locally, but 187 are a CRLF artifact: `core.autocrlf=true` checks out CRLF while Prettier defaults to LF. Line-ending-agnostic recheck (`--end-of-line auto`) shows 20 drifted files — all pre-existing; every new/feature file passes |
+| `npm run lint`               | DRIFT  | Pre-existing repo-wide failures (919 problems); all new feature files lint clean; CI step is `continue-on-error`                                                                                                                                 |
+| `cargo fmt -- --check`       | PASS   |                                                                                                                                                                                                                                                  |
+| `cargo clippy --all-targets` | PASS   | `--all-features` is Linux-only (tethering/libgphoto2); enforced in CI `lint.yml`                                                                                                                                                                 |
+| `cargo test`                 | PASS   | 57 unit + 73 integration tests                                                                                                                                                                                                                   |
 
 CI (`.github/workflows`): `lint.yml` runs frontend tests + typecheck (blocking), cargo
 fmt/test and clippy `--all-features -D warnings` on Ubuntu; `pr-ci.yml`/`ci.yml` build
@@ -90,11 +90,19 @@ wrote receipt for 1 exported of 1 selected items`, `Workflow runs: 1 succeeded`,
 - Headless export `--workflow does-not-exist`: `Headless export failed: workflow
 'does-not-exist' is not in the workflow registry`, exit `1`, no image rendered.
 - Full automated suites and gates per the table above.
+- Re-verified 2026-08-31 (second pass): all gates green with identical results
+  (`npm test` 77/77, cargo 57 unit + 73 integration, clippy clean). Headless rows
+  reproduced: listing exit `0`; `--workflow example-receipt` exit `0` with a 2048×2048
+  GPU render at 148.8 ms and a 1.8 MB output plus receipt; unknown id exit `1` with no
+  output file; export **without** `--workflow` printed no workflow lines at all —
+  zero subprocess overhead (M9 headless half).
 
-macOS/Linux: automated rows run via `lint.yml` (Ubuntu) and build matrix
-(`pr-ci.yml`/`ci.yml`); desktop-session rows M1–M11 remain to be executed on those
-platforms before upstream submission — tracked as CI/manual evidence tasks on
-`rapidraw-616.1`.
+macOS/Linux: no runs exist yet — the four proposal branches (see
+`docs/testing/upstream-proposals.md`) are local-only pending push authorization, so
+`lint.yml` (Ubuntu: frontend tests, cargo fmt/test, clippy `--all-features`) and the
+`pr-ci.yml`/`ci.yml` build matrix will produce the automated-platform evidence as soon
+as they are pushed. Desktop-session rows M1–M11 on macOS/Linux remain manual after
+that; tracked as CI/manual evidence tasks on `rapidraw-616.1`.
 
 ## Performance references
 
