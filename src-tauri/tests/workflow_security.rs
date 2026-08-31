@@ -1087,7 +1087,7 @@ fn workflow_security_output_exhaustion_terminates_the_process_tree() {
         &base.join("bin"),
         "flood",
         &format!(
-            "sleep 30 &\necho $! > '{pidfile}'\nhead -c {flood} /dev/zero | tr '\\0' x",
+            "sleep 30 &\necho $! > '{pidfile}'\nhead -c {flood_bytes} /dev/zero | tr '\\0' x",
             pidfile = pidfile.display()
         ),
         "",
