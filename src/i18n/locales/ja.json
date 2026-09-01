@@ -972,6 +972,12 @@
       },
       "title": "ライブラリ",
       "viewOptions": {
+        "captureSessions": "Capture Sessions",
+        "captureSessionsEnable": "Group by capture time",
+        "captureSessionsGap": "Maximum adjacent gap",
+        "captureSessionsMinutes_other": "{{count}} minutes",
+        "captureSessionsSeconds_other": "{{count}}秒",
+        "captureSessionsSliderLabel": "撮影セッションの間隔: {{gap}}",
         "currentFolder": "現在のフォルダ",
         "displayMode": "表示モード",
         "exifDisabledTooltip": "このオプションを使用するには、設定でEXIF読み込みを有効にしてください。",
@@ -1005,6 +1011,9 @@
       "progress": "インポート中... ({{current}}/{{total}})"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}} images use their file modified time",
+      "captureSessionLabel": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_other": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
       "cloudPlaceholder": "iCloudに保存されています — 未ダウンロード",
       "collapseFolder": "フォルダを折りたたむ",
       "currentFolder": "現在のフォルダ",

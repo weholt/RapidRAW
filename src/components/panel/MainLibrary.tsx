@@ -34,6 +34,7 @@ import {
   LibraryDisplayMode,
 } from '../ui/AppProperties';
 import { GroupBadgeInfo, GroupId } from '../../utils/imageGrouping';
+import { CaptureSession } from '../../utils/captureTimeGrouping';
 import { ImportState, Status } from '../ui/ExportImportProperties';
 import Text from '../ui/Text';
 import { TextColors, TextVariants, TextWeights } from '../../types/typography';
@@ -58,6 +59,7 @@ interface MainLibraryProps {
   appSettings: AppSettings | null;
   currentFolderPath: string | null;
   groupBadgeInfo: Map<GroupId, GroupBadgeInfo> | null;
+  captureSessions: CaptureSession[];
   imageList: Array<ImageFile>;
   imageRatings: Record<string, number>;
   importState: ImportState;

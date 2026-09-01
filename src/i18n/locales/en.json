@@ -975,6 +975,14 @@
       },
       "title": "Library",
       "viewOptions": {
+        "captureSessions": "Capture Sessions",
+        "captureSessionsEnable": "Group by capture time",
+        "captureSessionsGap": "Maximum adjacent gap",
+        "captureSessionsMinutes_one": "1 minute",
+        "captureSessionsMinutes_other": "{{count}} minutes",
+        "captureSessionsSeconds_one": "1 second",
+        "captureSessionsSeconds_other": "{{count}} seconds",
+        "captureSessionsSliderLabel": "Capture session gap: {{gap}}",
         "currentFolder": "Current Folder",
         "displayMode": "Display Mode",
         "exifDisabledTooltip": "Enable EXIF Reading in Settings to use this option.",
@@ -1008,6 +1016,11 @@
       "progress": "Importing... ({{current}}/{{total}})"
     },
     "items": {
+      "captureSessionFallback_one": "1 image uses its file modified time",
+      "captureSessionFallback_other": "{{count}} images use their file modified time",
+      "captureSessionLabel": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_one": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_other": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
       "cloudPlaceholder": "Stored in iCloud — not downloaded",
       "collapseFolder": "Collapse Folder",
       "currentFolder": "Current Folder",

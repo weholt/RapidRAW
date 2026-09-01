@@ -972,6 +972,12 @@
       },
       "title": "相簿",
       "viewOptions": {
+        "captureSessions": "擷取工作階段",
+        "captureSessionsEnable": "按擷取時間分組",
+        "captureSessionsGap": "最大相鄰間隙",
+        "captureSessionsMinutes_other": "{{count}}分",
+        "captureSessionsSeconds_other": "{{count}} 秒",
+        "captureSessionsSliderLabel": "拍攝工作階段間隔：{{gap}}",
         "currentFolder": "當前資料夾",
         "displayMode": "顯示模式",
         "exifDisabledTooltip": "在設定中啟用 EXIF 讀取以使用此選項。",
@@ -1005,6 +1011,9 @@
       "progress": "匯入中...（{{current}}/{{total}}）"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}}圖像使用其文件修改時間",
+      "captureSessionLabel": "擷取工作階段{{range}}、{{count}}影像、{{fallbackCount}}檔案時間回退",
+      "captureSessionLabel_other": "擷取工作階段{{range}}、{{count}}影像、{{fallbackCount}}檔案時間回退",
       "cloudPlaceholder": "儲存在 iCloud 中 — 未下載",
       "collapseFolder": "摺疊資料夾",
       "currentFolder": "當前資料夾",
