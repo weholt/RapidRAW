@@ -3,6 +3,11 @@ import { useLibraryStore } from '../store/useLibraryStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { RawStatus, EditedStatus, SortDirection, ImageFile, GroupingMode } from '../components/ui/AppProperties';
 import { buildImageGroups, GroupBadgeInfo, GroupId } from '../utils/imageGrouping';
+import {
+  captureGapSecondsForSettings,
+  CaptureSession,
+  groupImagesIntoCaptureSessions,
+} from '../utils/captureTimeGrouping';
 
 export const ADVANCED_QUERY_REGEX =
   /^(iso|aperture|f|shutter|s|focal|mm|rating|color|camera|make|model|lens)\s*(?::)?\s*(>=|<=|>|<|=)?\s*(.+)$/i;
@@ -38,9 +43,10 @@ const parseFocalLength = (val: string | undefined): number => {
 export interface GroupedLibrary {
   displayList: ImageFile[];
   badges: Map<GroupId, GroupBadgeInfo> | null;
+  captureSessions: CaptureSession[];
 }
 
-function computeGroupedLibrary(libraryState: any, settingsState: any): GroupedLibrary {
+export function computeGroupedLibrary(libraryState: any, settingsState: any): GroupedLibrary {
   const { imageList, imageRatings, filterCriteria, searchCriteria, sortCriteria } = libraryState;
   const { appSettings } = settingsState;
 
@@ -172,9 +178,10 @@ function computeGroupedLibrary(libraryState: any, settingsState: any): GroupedLi
   let processedList = imageList;
   let searchMatchingGroupIds: Set<string> | null = null;
 
+  let groupingResult: ReturnType<typeof buildImageGroups> | null = null;
   if (isGroupingActive) {
     const groupEditedFiles = appSettings?.groupEditedFiles ?? true;
-    const groupingResult = buildImageGroups(imageList, groupingMode, groupEditedFiles);
+    groupingResult = buildImageGroups(imageList, groupingMode, groupEditedFiles);
     processedList = groupingResult.displayList;
 
     if (isSearchActive) {
@@ -197,9 +204,9 @@ function computeGroupedLibrary(libraryState: any, settingsState: any): GroupedLi
         return matchesSearch(image);
       });
 
-  const list = [...filteredBySearch];
+  let list = [...filteredBySearch];
 
-  list.sort((a, b) => {
+  const sortImages = (a: ImageFile, b: ImageFile) => {
     const { key, order } = sortCriteria;
     let comparison = 0;
 
@@ -253,13 +260,24 @@ function computeGroupedLibrary(libraryState: any, settingsState: any): GroupedLi
     }
 
     return order === SortDirection.Ascending ? comparison : -comparison;
-  });
+  };
 
-  const badges = isGroupingActive
-    ? buildImageGroups(imageList, groupingMode, appSettings?.groupEditedFiles ?? true).badges
-    : null;
+  const captureSessions = appSettings?.captureTimeGroupingEnabled
+    ? groupImagesIntoCaptureSessions(
+        list,
+        captureGapSecondsForSettings(appSettings?.captureTimeGroupingSeconds, appSettings?.captureTimeGroupingMinutes),
+      )
+    : [];
 
-  return { displayList: list, badges };
+  if (captureSessions.length > 0) {
+    list = captureSessions.flatMap((session) => session.images);
+  } else {
+    list.sort(sortImages);
+  }
+
+  const badges = groupingResult?.badges ?? null;
+
+  return { displayList: list, badges, captureSessions };
 }
 
 export function computeSortedLibrary(libraryState: any, settingsState: any): ImageFile[] {

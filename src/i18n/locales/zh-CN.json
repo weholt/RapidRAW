@@ -972,6 +972,12 @@
       },
       "title": "图库",
       "viewOptions": {
+        "captureSessions": "捕获会话",
+        "captureSessionsEnable": "按捕获时间分组",
+        "captureSessionsGap": "最大相邻间隙",
+        "captureSessionsMinutes_other": "{{count}}分钟",
+        "captureSessionsSeconds_other": "{{count}} 秒",
+        "captureSessionsSliderLabel": "拍摄会话间隔：{{gap}}",
         "currentFolder": "当前文件夹",
         "displayMode": "显示模式",
         "exifDisabledTooltip": "在设置中启用 EXIF 读取以使用此选项。",
@@ -1005,6 +1011,9 @@
       "progress": "导入中...（{{current}}/{{total}}）"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}}图像使用其文件修改时间",
+      "captureSessionLabel": "捕获会话{{range}}、{{count}}图像、{{fallbackCount}}文件时间回退",
+      "captureSessionLabel_other": "捕获会话{{range}}、{{count}}图像、{{fallbackCount}}文件时间回退",
       "cloudPlaceholder": "存储在 iCloud 中 — 未下载",
       "collapseFolder": "折叠文件夹",
       "currentFolder": "当前文件夹",
