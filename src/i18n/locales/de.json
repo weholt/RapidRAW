@@ -795,6 +795,18 @@
       "removeGps": "GPS-Daten entfernen",
       "saveWithMetadata": "Mit Metadaten speichern"
     },
+    "phase": {
+      "cancelling": "Workflows werden abgebrochen…",
+      "discovering": "Workflows werden gesucht…",
+      "postBatch": "Batch-Workflow läuft",
+      "postImage": "Workflow läuft",
+      "rendering": "Bild wird gerendert",
+      "timeout": "{{seconds}}s Zeitlimit",
+      "waiting": "Warten auf einen Workflow-Slot…",
+      "warnings_one": "{{count}} Warnung",
+      "warnings_other": "{{count}} Warnungen",
+      "writing": "Bild wird geschrieben"
+    },
     "resize": {
       "dontEnlarge": "Nicht vergrößern",
       "modes": {
@@ -805,6 +817,24 @@
       },
       "pixels": "Pixel",
       "resizeToFit": "In Rahmen einpassen"
+    },
+    "result": {
+      "cancelled": "Export abgebrochen",
+      "dismiss": "Schließen",
+      "imageErrors": "Fehlgeschlagene Bilder",
+      "statusCancelled": "abgebrochen",
+      "statusFailed": "fehlgeschlagen",
+      "statusSucceeded": "erfolgreich",
+      "statusTimedOut": "Zeitlimit überschritten",
+      "statusWarned": "mit Warnungen",
+      "stderr": "Workflow-Ausgabe",
+      "summary": "{{succeeded}} von {{total}} exportiert",
+      "warningPrefix": "Warnung",
+      "workflowFailures_one": "{{count}} Workflow-Lauf fehlgeschlagen",
+      "workflowFailures_other": "{{count}} Workflow-Läufe fehlgeschlagen",
+      "workflowRuns": "Workflow-Läufe",
+      "workflowWarnings_one": "{{count}} Workflow-Warnung",
+      "workflowWarnings_other": "{{count}} Workflow-Warnungen"
     },
     "sections": {
       "advanced": "Erweitert",
@@ -853,6 +883,38 @@
       "scale": "Skalierung",
       "spacing": "Abstand",
       "watermarkImage": "Wasserzeichen-Bild"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Verstanden, Workflows ausführen",
+        "decline": "Export abbrechen",
+        "discoveryLocations": "Workflows werden aus den mitgelieferten Beispielen und deinem Ordner ~/.rapidraw/workflows erkannt. Prüfe oder entferne installierte Workflows dort jederzeit.",
+        "fullPermissions": "Workflows laufen als Programme mit deinen vollen Benutzerrechten: Sie können jede Datei, auf die du Zugriff hast, lesen, ändern und löschen und das Netzwerk erreichen.",
+        "intro": "Dieser Export führt {{selected}} Workflow(s) auf deinem Computer aus. Bitte bestätige vor der ersten Workflow-Ausführung:",
+        "noSandbox": "RapidRAW sandboxed Workflows nicht. Timeouts und Ausgabegrenzen begrenzen einen Lauf, beschränken aber nicht, was ein Workflow mit deinen Dateien tun kann.",
+        "onlyTrustedSources": "Führe nur Workflows aus, denen du vertraust. Installiere niemals einen Workflow aus unbekannter Quelle.",
+        "title": "Lokale Export-Workflows ausführen?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

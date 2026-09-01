@@ -1,0 +1,40 @@
+{
+  "protocolVersion": 1,
+  "runId": "run-0192",
+  "workflowId": "example-post-batch-receipt",
+  "phase": "postBatch",
+  "sourcePath": null,
+  "exportedPath": null,
+  "artifacts": [],
+  "selectedItems": [
+    {
+      "sourcePath": "/home/photographer/Pictures/raw/DSC_0001.NEF",
+      "exportedPath": null,
+      "artifacts": [],
+      "error": null
+    },
+    {
+      "sourcePath": "/home/photographer/Pictures/raw/DSC_0002.NEF",
+      "exportedPath": null,
+      "artifacts": [],
+      "error": null
+    }
+  ],
+  "exportedItems": [
+    {
+      "sourcePath": "/home/photographer/Pictures/raw/DSC_0001.NEF",
+      "exportedPath": "/home/photographer/Pictures/export/DSC_0001.jpg",
+      "artifacts": [],
+      "error": null
+    }
+  ],
+  "exportSettings": {
+    "fileFormat": "jpeg",
+    "jpegQuality": 92,
+    "keepMetadata": true,
+    "stripGps": false
+  },
+  "index": null,
+  "total": 2,
+  "workspaceTempDirectory": "/home/photographer/.cache/rapidraw/run-0192"
+}

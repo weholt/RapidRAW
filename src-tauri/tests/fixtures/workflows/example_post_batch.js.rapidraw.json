@@ -1,0 +1,9 @@
+{
+  "id": "example-post-batch-receipt",
+  "displayName": "Example post-batch receipt",
+  "description": "Writes a receipt.json into the workspace temp directory after the batch settles.",
+  "phase": "postBatch",
+  "order": 100,
+  "timeoutSeconds": 30,
+  "onError": "warn"
+}

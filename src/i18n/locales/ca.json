@@ -819,6 +819,19 @@
       "removeGps": "Eliminar dades GPS",
       "saveWithMetadata": "Desar amb metadades"
     },
+    "phase": {
+      "cancelling": "Cancel·lant fluxos de treball…",
+      "discovering": "Descobrint fluxos de treball…",
+      "postBatch": "Executant el flux de treball per lots",
+      "postImage": "Executant el flux de treball",
+      "rendering": "Renderitzant la imatge",
+      "timeout": "límit de {{seconds}}s",
+      "waiting": "Esperant un espai de flux de treball…",
+      "warnings_one": "{{count}} avís",
+      "warnings_many": "{{count}} avisos",
+      "warnings_other": "{{count}} avisos",
+      "writing": "Escrivint la imatge"
+    },
     "resize": {
       "dontEnlarge": "No ampliar",
       "modes": {
@@ -829,6 +842,26 @@
       },
       "pixels": "píxels",
       "resizeToFit": "Redimensionar per ajustar"
+    },
+    "result": {
+      "cancelled": "Exportació cancel·lada",
+      "dismiss": "Tancar",
+      "imageErrors": "Imatges fallides",
+      "statusCancelled": "cancel·lada",
+      "statusFailed": "fallida",
+      "statusSucceeded": "correcte",
+      "statusTimedOut": "temps esgotat",
+      "statusWarned": "amb avisos",
+      "stderr": "Sortida del flux de treball",
+      "summary": "{{succeeded}} de {{total}} exportades",
+      "warningPrefix": "Avís",
+      "workflowFailures_one": "{{count}} execució de flux de treball fallida",
+      "workflowFailures_many": "{{count}} execucions de flux de treball fallides",
+      "workflowFailures_other": "{{count}} execucions de flux de treball fallides",
+      "workflowRuns": "Execucions de fluxos de treball",
+      "workflowWarnings_one": "{{count}} avís de flux de treball",
+      "workflowWarnings_many": "{{count}} avisos de flux de treball",
+      "workflowWarnings_other": "{{count}} avisos de flux de treball"
     },
     "sections": {
       "advanced": "Avançat",
@@ -878,6 +911,38 @@
       "scale": "Escala",
       "spacing": "Espaiat",
       "watermarkImage": "Imatge de la marca d'aigua"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Ho entenc, executa els fluxos",
+        "decline": "Cancel·la l'exportació",
+        "discoveryLocations": "Els fluxos es detecten als exemples inclosos i a la teva carpeta ~/.rapidraw/workflows. Revisa o elimina allà els fluxos instal·lats en qualsevol moment.",
+        "fullPermissions": "Els fluxos de treball s'executen com a programes amb tots els teus permisos d'usuari: poden llegir, modificar i suprimir qualsevol fitxer accessible i accedir a la xarxa.",
+        "intro": "Aquesta exportació executarà {{selected}} flux(s) de treball al teu ordinador. Confirma abans de la primera execució:",
+        "noSandbox": "RapidRAW no aïlla (sandbox) els fluxos de treball. Els temps límit i els límits de sortida acoten una execució, però no limiten què pot fer un flux amb els teus fitxers.",
+        "onlyTrustedSources": "Executa només fluxos de fonts de confiança. Mai instal·lis un flux d'un origen desconegut.",
+        "title": "Executar fluxos de treball d'exportació locals?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

@@ -843,6 +843,20 @@
       "removeGps": "Usuń dane GPS",
       "saveWithMetadata": "Zapisz z metadanymi"
     },
+    "phase": {
+      "cancelling": "Anulowanie przepływów pracy…",
+      "discovering": "Wykrywanie przepływów pracy…",
+      "postBatch": "Uruchamianie przepływu pracy partii",
+      "postImage": "Uruchamianie przepływu pracy",
+      "rendering": "Renderowanie obrazu",
+      "timeout": "limit {{seconds}}s",
+      "waiting": "Oczekiwanie na miejsce przepływu pracy…",
+      "warnings_one": "{{count}} ostrzeżenie",
+      "warnings_few": "{{count}} ostrzeżenia",
+      "warnings_many": "{{count}} ostrzeżeń",
+      "warnings_other": "{{count}} ostrzeżeń",
+      "writing": "Zapisywanie obrazu"
+    },
     "resize": {
       "dontEnlarge": "Nie powiększaj",
       "modes": {
@@ -853,6 +867,28 @@
       },
       "pixels": "pikseli",
       "resizeToFit": "Zmień rozmiar, aby dopasować"
+    },
+    "result": {
+      "cancelled": "Eksport anulowano",
+      "dismiss": "Zamknij",
+      "imageErrors": "Nieudane obrazy",
+      "statusCancelled": "anulowano",
+      "statusFailed": "niepowodzenie",
+      "statusSucceeded": "powodzenie",
+      "statusTimedOut": "limit czasu",
+      "statusWarned": "ostrzeżenia",
+      "stderr": "Dane wyjściowe przepływu pracy",
+      "summary": "Wyeksportowano {{succeeded}} z {{total}}",
+      "warningPrefix": "Ostrzeżenie",
+      "workflowFailures_one": "{{count}} uruchomienie przepływu pracy nie powiodło się",
+      "workflowFailures_few": "{{count}} uruchomienia przepływów pracy nie powiodły się",
+      "workflowFailures_many": "{{count}} uruchomień przepływów pracy nie powiodło się",
+      "workflowFailures_other": "{{count}} uruchomienia przepływów pracy nie powiodły się",
+      "workflowRuns": "Uruchomienia przepływów pracy",
+      "workflowWarnings_one": "{{count}} ostrzeżenie przepływu pracy",
+      "workflowWarnings_few": "{{count}} ostrzeżenia przepływów pracy",
+      "workflowWarnings_many": "{{count}} ostrzeżeń przepływów pracy",
+      "workflowWarnings_other": "{{count}} ostrzeżeń przepływów pracy"
     },
     "sections": {
       "advanced": "Zaawansowane",
@@ -903,6 +939,38 @@
       "scale": "Skala",
       "spacing": "Odstępy",
       "watermarkImage": "Obraz znaku wodnego"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Rozumiem, uruchom przepływy",
+        "decline": "Anuluj eksport",
+        "discoveryLocations": "Przepływy są wykrywane w dołączonych przykładach i w twoim folderze ~/.rapidraw/workflows. W każdej chwili możesz tam przejrzeć lub usunąć zainstalowane przepływy.",
+        "fullPermissions": "Przepływy działają jak programy z twoimi pełnymi uprawnieniami: mogą czytać, zmieniać i usuwać każdy dostępny plik oraz łączyć się z siecią.",
+        "intro": "Ten eksport uruchomi {{selected}} przepływ(y) na twoim komputerze. Potwierdź przed pierwszym uruchomieniem:",
+        "noSandbox": "RapidRAW nie stosuje piaskownicy dla przepływów. Limity czasu i wyjścia przerywają przebieg, ale nie ograniczają tego, co przepływ może zrobić z twoimi plikami.",
+        "onlyTrustedSources": "Uruchamiaj tylko przepływy z zaufanych źródeł. Nigdy nie instaluj przepływu od nieznanej osoby.",
+        "title": "Uruchomić lokalne przepływy eksportu?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
