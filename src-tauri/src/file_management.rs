@@ -377,6 +377,7 @@ fn assign_group_ids(files: &mut [ImageFile], settings: &crate::app_settings::App
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
 pub struct ImportSettings {
     pub filename_template: String,
     pub organize_by_date: bool,
@@ -3623,6 +3624,7 @@ pub fn get_cached_or_generate_thumbnail_image(
 }
 
 #[tauri::command]
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
 pub async fn import_files(
     source_paths: Vec<String>,
     destination_folder: String,
@@ -3763,21 +3765,27 @@ pub async fn import_files(
                     {
                         if let Err(trash_error) = trash::delete(&source_path) {
                             log::warn!(
-                                "Failed to trash source file {}: {}. Deleting permanently.",
+                                "Failed to trash source file {}: {}. Source retained.",
                                 source_path.display(),
                                 trash_error
                             );
-                            fs::remove_file(&source_path).map_err(|e| e.to_string())?;
+                            return Err(format!(
+                                "Verified copy created, but source was retained because trash failed: {}",
+                                trash_error
+                            ));
                         }
                         if source_sidecar.exists()
                             && let Err(trash_error) = trash::delete(&source_sidecar)
                         {
                             log::warn!(
-                                "Failed to trash source sidecar {}: {}. Deleting permanently.",
+                                "Failed to trash source sidecar {}: {}. Sidecar retained.",
                                 source_sidecar.display(),
                                 trash_error
                             );
-                            fs::remove_file(&source_sidecar).map_err(|e| e.to_string())?;
+                            return Err(format!(
+                                "Verified copy created, but sidecar was retained because trash failed: {}",
+                                trash_error
+                            ));
                         }
                     }
 
@@ -3787,13 +3795,10 @@ pub async fn import_files(
                         target_os = "linux"
                     )))]
                     {
-                        fs::remove_file(&source_path).map_err(|e| e.to_string())?;
-                        if source_sidecar.exists() {
-                            fs::remove_file(&source_sidecar).map_err(|e| e.to_string())?;
-                        }
-                        if source_rrexif.exists() {
-                            let _ = fs::remove_file(&source_rrexif);
-                        }
+                        return Err(
+                            "Move/source deletion is unsupported on this platform; source retained"
+                                .to_string(),
+                        );
                     }
                 }
 

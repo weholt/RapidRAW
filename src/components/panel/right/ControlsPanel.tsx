@@ -3,6 +3,7 @@ import { RotateCcw, Copy, ClipboardPaste, Aperture, ChartArea } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
+import type { ParseKeys } from 'i18next';
 import BasicAdjustments from '../../adjustments/Basic';
 import CurveGraph from '../../adjustments/Curves';
 import ColorPanel from '../../adjustments/Color';
@@ -183,7 +184,7 @@ export default function Controls() {
     };
 
     const isPasteAllowed = copiedSectionAdjustments && copiedSectionAdjustments.section === sectionName;
-    const translatedSection = t(`editor.adjustments.sections.${sectionName}`);
+    const translatedSection = t(`editor.adjustments.sections.${sectionName}` as ParseKeys);
 
     const pasteLabel = copiedSectionAdjustments
       ? t('editor.adjustments.actions.pasteLabel', { section: translatedSection })
@@ -282,7 +283,7 @@ export default function Controls() {
               effects: EffectsPanel,
             }[sectionName];
 
-            const title = t(`editor.adjustments.sections.${sectionName}`);
+            const title = t(`editor.adjustments.sections.${sectionName}` as ParseKeys);
             const sectionVisibility = adjustments.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility;
 
             return (
