@@ -22,7 +22,14 @@ import {
   WatermarkAnchor,
 } from '../../ui/ExportImportProperties';
 import { Invokes, SelectedImage, AppSettings, Panel } from '../../ui/AppProperties';
+import type { WorkflowProgressEvent, WorkflowProgressPhase } from '../../ui/ExportImportProperties';
 import ExportPresetsList from '../../ui/ExportPresetsList';
+import ExportResult from '../../export/ExportResult';
+import ExportWorkflowConsent, {
+  hasWorkflowConsent,
+  recordWorkflowConsent,
+} from '../../export/ExportWorkflowConsent';
+import ExportWorkflowSelect, { useExportWorkflowDiscovery } from '../../export/ExportWorkflowSelect';
 import { useExportSettings } from '../../../hooks/useExportSettings';
 import { useOsPlatform } from '../../../hooks/useOsPlatform';
 import Text from '../../ui/Text';
@@ -173,6 +180,64 @@ const formatBytes = (bytes: number, t: any, decimals = 2) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
+function phaseLabelKey(phase: WorkflowProgressPhase) {
+  switch (phase) {
+    case 'discovering':
+      return 'export.phase.discovering';
+    case 'waiting':
+      return 'export.phase.waiting';
+    case 'rendering':
+      return 'export.phase.rendering';
+    case 'writing':
+      return 'export.phase.writing';
+    case 'runningPostImage':
+      return 'export.phase.postImage';
+    case 'runningPostBatch':
+      return 'export.phase.postBatch';
+    case 'cancelling':
+      return 'export.phase.cancelling';
+    default:
+      return null;
+  }
+}
+
+/** One live progress line distinguishing image processing from workflow execution. */
+function WorkflowPhaseLine({ workflow }: { workflow: WorkflowProgressEvent }) {
+  const { t } = useTranslation();
+  const labelKey = phaseLabelKey(workflow.phase);
+  if (!labelKey) return null;
+  const isWorkflowExecution = workflow.phase === 'runningPostImage' || workflow.phase === 'runningPostBatch';
+  const isImagePhase = workflow.phase === 'rendering' || workflow.phase === 'writing';
+
+  return (
+    <div className="flex items-center justify-center gap-2 flex-wrap min-h-5">
+      <Text as="span" variant={TextVariants.small} color={TextColors.secondary}>
+        {t(labelKey)}
+      </Text>
+      {isWorkflowExecution && workflow.workflowId && (
+        <Text as="span" variant={TextVariants.small} color={TextColors.accent}>
+          {workflow.workflowId}
+        </Text>
+      )}
+      {isImagePhase && workflow.total > 0 && (
+        <Text as="span" variant={TextVariants.small} color={TextColors.secondary}>
+          ({workflow.index + 1}/{workflow.total})
+        </Text>
+      )}
+      {isWorkflowExecution && workflow.timeoutSeconds !== null && (
+        <Text as="span" variant={TextVariants.small} color={TextColors.secondary}>
+          {t('export.phase.timeout', { seconds: workflow.timeoutSeconds })}
+        </Text>
+      )}
+      {workflow.warningCount > 0 && (
+        <Text as="span" variant={TextVariants.small} className="text-yellow-500">
+          {t('export.phase.warnings', { count: workflow.warningCount })}
+        </Text>
+      )}
+    </div>
+  );
+}
+
 export default function ExportPanel({
   exportState,
   multiSelectedPaths,
@@ -231,6 +296,8 @@ export default function ExportPanel({
     setWatermarkSpacing,
     watermarkOpacity,
     setWatermarkOpacity,
+    workflowIds,
+    setWorkflowIds,
     preserveFolders,
     setPreserveFolders,
     handleApplyPreset,
@@ -240,6 +307,7 @@ export default function ExportPanel({
   const adjustmentsRef = useRef(useEditorStore.getState().adjustments);
 
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
   const initDone = useRef(false);
 
   useEffect(() => {
@@ -279,10 +347,20 @@ export default function ExportPanel({
   const activePanels = useUIStore((state) => state.activePanels);
   const isPanelReallyActive = Object.values(activePanels).includes(Panel.Export);
 
-  const { status, progress, errorMessage } = exportState;
+  const { status, progress, errorMessage, workflow, result } = exportState;
   const isExporting = [Status.Exporting, Status.Cancelling].includes(status);
   const isCancelling = status === Status.Cancelling;
   const isLibraryContext = !!onClose;
+
+  const dismissResult = () => {
+    setExportState((current: ExportState) => ({
+      status: Status.Idle,
+      errorMessage: '',
+      workflow: null,
+      result: null,
+      progress: current.progress,
+    }));
+  };
 
   const pathsToExport = useMemo(() => {
     return isLibraryContext
@@ -295,6 +373,8 @@ export default function ExportPanel({
   }, [isLibraryContext, multiSelectedPaths, selectedImage?.path]);
 
   const numImages = pathsToExport.length;
+
+  const workflowDiscovery = useExportWorkflowDiscovery(isVisible && numImages > 0 && !isAndroid);
 
   useEffect(() => {
     const fetchDims = async () => {
@@ -457,6 +537,13 @@ export default function ExportPanel({
   const handleExport = async () => {
     if (numImages === 0 || isExporting) return;
 
+    // Workflows are trusted local code: the trust warning must appear and
+    // be accepted before the first export that would execute one.
+    if (!isAndroid && workflowIds.length > 0 && !hasWorkflowConsent()) {
+      setConsentOpen(true);
+      return;
+    }
+
     let finalFilenameTemplate = filenameTemplate;
     if (
       numImages > 1 &&
@@ -476,6 +563,7 @@ export default function ExportPanel({
       resize: enableResize ? { mode: resizeMode, value: resizeValue, dontEnlarge } : null,
       stripGps,
       exportMasks: !isLibraryContext ? exportMasks : undefined,
+      workflowIds,
       watermark:
         enableWatermark && watermarkPath
           ? {
@@ -535,7 +623,15 @@ export default function ExportPanel({
           if (dir) saveLastUsedPreset(dir);
         }
 
-        setExportState({ status: Status.Exporting, progress: { current: 0, total: numImages }, errorMessage: '' });
+        // A new export discards the previous run's terminal detail and run
+        // tracking so stale events cannot leak into this run.
+        setExportState({
+          status: Status.Exporting,
+          progress: { current: 0, total: numImages },
+          errorMessage: '',
+          workflow: null,
+          result: null,
+        });
         await invoke(Invokes.ExportImages, {
           paths: pathsToExport,
           outputFolderOrFile: outputFolderOrFile,
@@ -824,6 +920,14 @@ export default function ExportPanel({
                       className="overflow-hidden"
                     >
                       <div className="px-4 pb-4 pt-2 border-t border-surface/50 flex flex-col gap-4">
+                        {!isAndroid && (
+                          <ExportWorkflowSelect
+                            discovery={workflowDiscovery}
+                            selectedIds={workflowIds}
+                            onChange={setWorkflowIds}
+                            disabled={isExporting}
+                          />
+                        )}
                         <Switch
                           label={t('export.advanced.preserveFolders')}
                           checked={preserveFolders}
@@ -873,6 +977,8 @@ export default function ExportPanel({
       </div>
 
       <div className="p-3 border-t border-surface shrink-0 space-y-2">
+        {isExporting && workflow && <WorkflowPhaseLine workflow={workflow} />}
+        {result && <ExportResult result={result} onDismiss={dismissResult} />}
         <Text as="div" variant={TextVariants.small} color={TextColors.primary} className="text-center">
           {isEstimating ? (
             <span className="italic">{t('export.status.estimatingSize')}</span>
@@ -943,6 +1049,17 @@ export default function ExportPanel({
           )}
         </Button>
       </div>
+
+      <ExportWorkflowConsent
+        open={consentOpen}
+        workflowCount={workflowIds.length}
+        onAccept={() => {
+          recordWorkflowConsent();
+          setConsentOpen(false);
+          handleExport();
+        }}
+        onDecline={() => setConsentOpen(false)}
+      />
     </div>
   );
 }

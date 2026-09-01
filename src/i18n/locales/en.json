@@ -795,6 +795,18 @@
       "removeGps": "Remove GPS Data",
       "saveWithMetadata": "Save with Metadata"
     },
+    "phase": {
+      "cancelling": "Cancelling workflows…",
+      "discovering": "Discovering workflows…",
+      "postBatch": "Running batch workflow",
+      "postImage": "Running workflow",
+      "rendering": "Rendering image",
+      "timeout": "{{seconds}}s timeout",
+      "waiting": "Waiting for a workflow slot…",
+      "warnings_one": "{{count}} warning",
+      "warnings_other": "{{count}} warnings",
+      "writing": "Writing image"
+    },
     "resize": {
       "dontEnlarge": "Don't Enlarge",
       "modes": {
@@ -805,6 +817,24 @@
       },
       "pixels": "pixels",
       "resizeToFit": "Resize to Fit"
+    },
+    "result": {
+      "cancelled": "Export cancelled",
+      "dismiss": "Dismiss",
+      "imageErrors": "Failed images",
+      "statusCancelled": "cancelled",
+      "statusFailed": "failed",
+      "statusSucceeded": "succeeded",
+      "statusTimedOut": "timed out",
+      "statusWarned": "warnings",
+      "stderr": "Workflow output",
+      "summary": "{{succeeded}} of {{total}} exported",
+      "warningPrefix": "Warning",
+      "workflowFailures_one": "{{selected}} workflow run failed",
+      "workflowFailures_other": "{{selected}} workflow runs failed",
+      "workflowRuns": "Workflow runs",
+      "workflowWarnings_one": "{{selected}} workflow warning",
+      "workflowWarnings_other": "{{selected}} workflow warnings"
     },
     "sections": {
       "advanced": "Advanced",
@@ -853,6 +883,38 @@
       "scale": "Scale",
       "spacing": "Spacing",
       "watermarkImage": "Watermark Image"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "I understand, run workflows",
+        "decline": "Cancel export",
+        "discoveryLocations": "Workflows are discovered from the bundled examples and your ~/.rapidraw/workflows folder. Review or remove installed workflows there at any time.",
+        "fullPermissions": "Workflows run as programs with your full user permissions: they can read, modify, and delete any file you can access, and they can reach the network.",
+        "intro": "This export will run {{selected}} workflow(s) on your computer. Please confirm before the first workflow execution:",
+        "noSandbox": "RapidRAW does not sandbox workflows. Timeouts and output limits bound a run, but they do not restrict what a workflow may do to your files.",
+        "onlyTrustedSources": "Only run workflows from sources you trust. Never install a workflow from someone you do not know.",
+        "title": "Run local export workflows?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

@@ -1,0 +1,6 @@
+{
+  "ok": true,
+  "message": "wrote receipt for /home/photographer/Pictures/raw/DSC_0001.NEF",
+  "warnings": [],
+  "producedArtifactPaths": ["receipt.json"]
+}

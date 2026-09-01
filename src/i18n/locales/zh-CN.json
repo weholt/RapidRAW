@@ -792,6 +792,18 @@
       "removeGps": "移除 GPS 数据",
       "saveWithMetadata": "保存时包含元数据"
     },
+    "phase": {
+      "cancelling": "正在取消工作流…",
+      "discovering": "正在发现工作流…",
+      "postBatch": "正在运行批处理工作流",
+      "postImage": "正在运行工作流",
+      "rendering": "正在渲染图像",
+      "timeout": "{{seconds}}秒超时",
+      "waiting": "正在等待工作流槽位…",
+      "warnings_one": "{{count}}条警告",
+      "warnings_other": "{{count}}条警告",
+      "writing": "正在写入图像"
+    },
     "resize": {
       "dontEnlarge": "不放大",
       "modes": {
@@ -802,6 +814,24 @@
       },
       "pixels": "像素",
       "resizeToFit": "调整大小以适应"
+    },
+    "result": {
+      "cancelled": "导出已取消",
+      "dismiss": "关闭",
+      "imageErrors": "失败的图像",
+      "statusCancelled": "已取消",
+      "statusFailed": "失败",
+      "statusSucceeded": "成功",
+      "statusTimedOut": "超时",
+      "statusWarned": "有警告",
+      "stderr": "工作流输出",
+      "summary": "已导出 {{total}} 张中的 {{succeeded}} 张",
+      "warningPrefix": "警告",
+      "workflowFailures_one": "{{count}}个工作流运行失败",
+      "workflowFailures_other": "{{count}}个工作流运行失败",
+      "workflowRuns": "工作流运行",
+      "workflowWarnings_one": "{{count}}条工作流警告",
+      "workflowWarnings_other": "{{count}}条工作流警告"
     },
     "sections": {
       "advanced": "高级",
@@ -850,6 +880,38 @@
       "scale": "缩放",
       "spacing": "间距",
       "watermarkImage": "水印图像"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "我已了解，运行工作流",
+        "decline": "取消导出",
+        "discoveryLocations": "工作流从内置示例和您的 ~/.rapidraw/workflows 目录中发现。您可以随时在那里查看或删除已安装的工作流。",
+        "fullPermissions": "工作流将以您的完整用户权限作为程序运行：可以读取、修改和删除您可访问的任何文件，并可以访问网络。",
+        "intro": "本次导出将在您的电脑上运行 {{selected}} 个工作流。首次执行前请确认：",
+        "noSandbox": "RapidRAW 不会对工作流进行沙箱隔离。超时和输出限制只能中止运行，并不限制工作流对您的文件所能做的操作。",
+        "onlyTrustedSources": "仅运行来自可信来源的工作流。切勿安装来历不明的工作流。",
+        "title": "运行本地导出工作流？"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

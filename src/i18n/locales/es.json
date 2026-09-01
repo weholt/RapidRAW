@@ -819,6 +819,19 @@
       "removeGps": "Eliminar datos GPS",
       "saveWithMetadata": "Guardar con metadatos"
     },
+    "phase": {
+      "cancelling": "Cancelando flujos de trabajo…",
+      "discovering": "Detectando flujos de trabajo…",
+      "postBatch": "Ejecutando flujo de trabajo por lotes",
+      "postImage": "Ejecutando flujo de trabajo",
+      "rendering": "Renderizando imagen",
+      "timeout": "límite de {{seconds}}s",
+      "waiting": "Esperando un espacio de flujo de trabajo…",
+      "warnings_one": "{{count}} advertencia",
+      "warnings_many": "{{count}} advertencias",
+      "warnings_other": "{{count}} advertencias",
+      "writing": "Escribiendo imagen"
+    },
     "resize": {
       "dontEnlarge": "No agrandar",
       "modes": {
@@ -829,6 +842,26 @@
       },
       "pixels": "píxeles",
       "resizeToFit": "Redimensionar para encajar"
+    },
+    "result": {
+      "cancelled": "Exportación cancelada",
+      "dismiss": "Descartar",
+      "imageErrors": "Imágenes fallidas",
+      "statusCancelled": "cancelado",
+      "statusFailed": "fallido",
+      "statusSucceeded": "correcto",
+      "statusTimedOut": "tiempo agotado",
+      "statusWarned": "con advertencias",
+      "stderr": "Salida del flujo de trabajo",
+      "summary": "{{succeeded}} de {{total}} exportadas",
+      "warningPrefix": "Advertencia",
+      "workflowFailures_one": "{{count}} ejecución de flujo de trabajo fallida",
+      "workflowFailures_many": "{{count}} ejecuciones de flujo de trabajo fallidas",
+      "workflowFailures_other": "{{count}} ejecuciones de flujo de trabajo fallidas",
+      "workflowRuns": "Ejecuciones de flujo de trabajo",
+      "workflowWarnings_one": "{{count}} advertencia de flujo de trabajo",
+      "workflowWarnings_many": "{{count}} advertencias de flujo de trabajo",
+      "workflowWarnings_other": "{{count}} advertencias de flujo de trabajo"
     },
     "sections": {
       "advanced": "Avanzado",
@@ -878,6 +911,38 @@
       "scale": "Escala",
       "spacing": "Espaciado",
       "watermarkImage": "Imagen de la marca de agua"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Entiendo, ejecutar flujos de trabajo",
+        "decline": "Cancelar exportación",
+        "discoveryLocations": "Los flujos se detectan en los ejemplos incluidos y en tu carpeta ~/.rapidraw/workflows. Revisa o elimina ahí los flujos instalados en cualquier momento.",
+        "fullPermissions": "Los flujos de trabajo se ejecutan como programas con todos tus permisos de usuario: pueden leer, modificar y eliminar cualquier archivo al que tengas acceso, y acceder a la red.",
+        "intro": "Esta exportación ejecutará {{selected}} flujo(s) de trabajo en tu equipo. Confirma antes de la primera ejecución:",
+        "noSandbox": "RapidRAW no aísla (sandbox) los flujos de trabajo. Los tiempos límite y límites de salida acotan una ejecución, pero no restringen lo que un flujo puede hacer con tus archivos.",
+        "onlyTrustedSources": "Ejecuta solo flujos de trabajo de fuentes de confianza. Nunca instales un flujo de origen desconocido.",
+        "title": "¿Ejecutar flujos de trabajo de exportación locales?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

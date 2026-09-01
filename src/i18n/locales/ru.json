@@ -843,6 +843,20 @@
       "removeGps": "Удалить данные GPS",
       "saveWithMetadata": "Сохранить с метаданными"
     },
+    "phase": {
+      "cancelling": "Отмена рабочих процессов…",
+      "discovering": "Обнаружение рабочих процессов…",
+      "postBatch": "Выполнение пакетного рабочего процесса",
+      "postImage": "Выполнение рабочего процесса",
+      "rendering": "Рендеринг изображения",
+      "timeout": "тайм-аут {{seconds}}с",
+      "waiting": "Ожидание слота рабочего процесса…",
+      "warnings_one": "{{count}} предупреждение",
+      "warnings_few": "{{count}} предупреждения",
+      "warnings_many": "{{count}} предупреждений",
+      "warnings_other": "{{count}} предупреждений",
+      "writing": "Запись изображения"
+    },
     "resize": {
       "dontEnlarge": "Не увеличивать",
       "modes": {
@@ -853,6 +867,28 @@
       },
       "pixels": "пикселей",
       "resizeToFit": "По размеру"
+    },
+    "result": {
+      "cancelled": "Экспорт отменён",
+      "dismiss": "Закрыть",
+      "imageErrors": "Неудачные изображения",
+      "statusCancelled": "отменено",
+      "statusFailed": "сбой",
+      "statusSucceeded": "успешно",
+      "statusTimedOut": "тайм-аут",
+      "statusWarned": "с предупреждениями",
+      "stderr": "Вывод рабочего процесса",
+      "summary": "Экспортировано {{succeeded}} из {{total}}",
+      "warningPrefix": "Предупреждение",
+      "workflowFailures_one": "{{count}} запуск рабочего процесса завершился сбоем",
+      "workflowFailures_few": "{{count}} запуска рабочих процессов завершились сбоем",
+      "workflowFailures_many": "{{count}} запусков рабочих процессов завершились сбоем",
+      "workflowFailures_other": "{{count}} запуска рабочих процессов завершились сбоем",
+      "workflowRuns": "Запуски рабочих процессов",
+      "workflowWarnings_one": "{{count}} предупреждение рабочего процесса",
+      "workflowWarnings_few": "{{count}} предупреждения рабочего процесса",
+      "workflowWarnings_many": "{{count}} предупреждений рабочих процессов",
+      "workflowWarnings_other": "{{count}} предупреждений рабочих процессов"
     },
     "sections": {
       "advanced": "Дополнительно",
@@ -903,6 +939,38 @@
       "scale": "Масштаб",
       "spacing": "Отступы",
       "watermarkImage": "Изображение водяного знака"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Понимаю, запустить процессы",
+        "decline": "Отменить экспорт",
+        "discoveryLocations": "Процессы обнаруживаются во встроенных примерах и в вашем каталоге ~/.rapidraw/workflows. Установленные процессы можно в любой момент проверить или удалить там.",
+        "fullPermissions": "Рабочие процессы выполняются как программы с полными правами вашего пользователя: они могут читать, изменять и удалять любые доступные вам файлы, а также обращаться к сети.",
+        "intro": "Этот экспорт запустит {{selected}} рабочий процесс (рабочих процессов) на вашем компьютере. Подтвердите перед первым запуском:",
+        "noSandbox": "RapidRAW не изолирует (sandbox) рабочие процессы. Таймауты и лимиты вывода ограничивают запуск, но не ограничивают действия процесса с вашими файлами.",
+        "onlyTrustedSources": "Запускайте только процессы из доверенных источников. Никогда не устанавливайте процесс из неизвестного источника.",
+        "title": "Запустить локальные рабочие процессы экспорта?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

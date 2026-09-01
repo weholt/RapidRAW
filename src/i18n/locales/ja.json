@@ -792,6 +792,18 @@
       "removeGps": "GPSデータを削除",
       "saveWithMetadata": "メタデータを含めて保存"
     },
+    "phase": {
+      "cancelling": "ワークフローをキャンセル中…",
+      "discovering": "ワークフローを検出中…",
+      "postBatch": "バッチワークフローを実行中",
+      "postImage": "ワークフローを実行中",
+      "rendering": "画像をレンダリング中",
+      "timeout": "タイムアウト{{seconds}}秒",
+      "waiting": "ワークフローのスロットを待機中…",
+      "warnings_one": "{{count}}件の警告",
+      "warnings_other": "{{count}}件の警告",
+      "writing": "画像を書き込み中"
+    },
     "resize": {
       "dontEnlarge": "拡大しない",
       "modes": {
@@ -802,6 +814,24 @@
       },
       "pixels": "ピクセル",
       "resizeToFit": "サイズに合わせる"
+    },
+    "result": {
+      "cancelled": "書き出しをキャンセルしました",
+      "dismiss": "閉じる",
+      "imageErrors": "失敗した画像",
+      "statusCancelled": "キャンセル",
+      "statusFailed": "失敗",
+      "statusSucceeded": "成功",
+      "statusTimedOut": "タイムアウト",
+      "statusWarned": "警告あり",
+      "stderr": "ワークフロー出力",
+      "summary": "{{total}}枚中{{succeeded}}枚を書き出しました",
+      "warningPrefix": "警告",
+      "workflowFailures_one": "ワークフロー実行{{count}}件が失敗",
+      "workflowFailures_other": "ワークフロー実行{{count}}件が失敗",
+      "workflowRuns": "ワークフロー実行",
+      "workflowWarnings_one": "ワークフロー警告{{count}}件",
+      "workflowWarnings_other": "ワークフロー警告{{count}}件"
     },
     "sections": {
       "advanced": "詳細設定",
@@ -850,6 +880,38 @@
       "scale": "倍率",
       "spacing": "間隔",
       "watermarkImage": "ウォーターマーク画像"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "理解した上でワークフローを実行",
+        "decline": "書き出しをキャンセル",
+        "discoveryLocations": "ワークフローは、同梱のサンプルと ~/.rapidraw/workflows フォルダーから検出されます。インストールされたワークフローはいつでもそこで確認・削除できます。",
+        "fullPermissions": "ワークフローは、お使いのユーザー権限でプログラムとして実行されます。アクセス可能なすべてのファイルの読み取り・変更・削除や、ネットワークへのアクセスが可能です。",
+        "intro": "この書き出しでは {{selected}} 個のワークフローをお使いのコンピューターで実行します。初回実行の前に確認してください：",
+        "noSandbox": "RapidRAW はワークフローをサンドボックス化しません。タイムアウトや出力の上限は実行を区切るだけで、ファイルへの操作を制限するものではありません。",
+        "onlyTrustedSources": "信頼できる提供元のワークフローのみ実行してください。知らない提供元のワークフローは絶対にインストールしないでください。",
+        "title": "ローカルの書き出しワークフローを実行しますか？"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

@@ -14,6 +14,7 @@ use wgpu::{Texture, TextureView};
 use crate::ai_processing::AiState;
 use crate::cache_utils::DecodedImageCache;
 use crate::camera_tethering::CameraSession;
+use crate::export_workflows::{WorkflowConcurrencyGate, WorkflowDiscoveryCache};
 use crate::gpu_processing::GpuProcessor;
 use crate::image_processing::GpuContext;
 use crate::launch_request::ExternalEditSession;
@@ -174,4 +175,10 @@ pub struct AppState {
     pub disks_cache: Mutex<Option<Disks>>,
     pub disks_cache_refreshing: AtomicBool,
     pub camera_session: Mutex<CameraSession>,
+    pub workflow_discovery_cache: Mutex<Option<WorkflowDiscoveryCache>>,
+    /// Bounds concurrent workflow subprocess runs, separately from export workers.
+    pub workflow_concurrency_gate: WorkflowConcurrencyGate,
+    /// Run id of the export currently holding the export task token, if that
+    /// export selected workflows; lets cancellation report the affected run.
+    pub workflow_run_id: Mutex<Option<String>>,
 }

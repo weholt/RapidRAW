@@ -819,6 +819,19 @@
       "removeGps": "Supprimer les données GPS",
       "saveWithMetadata": "Enregistrer avec les métadonnées"
     },
+    "phase": {
+      "cancelling": "Annulation des flux de travail…",
+      "discovering": "Découverte des flux de travail…",
+      "postBatch": "Exécution du flux de travail par lot",
+      "postImage": "Exécution du flux de travail",
+      "rendering": "Rendu de l'image",
+      "timeout": "limite de {{seconds}}s",
+      "waiting": "En attente d'un emplacement de flux de travail…",
+      "warnings_one": "{{count}} avertissement",
+      "warnings_many": "{{count}} avertissements",
+      "warnings_other": "{{count}} avertissements",
+      "writing": "Écriture de l'image"
+    },
     "resize": {
       "dontEnlarge": "Ne pas agrandir",
       "modes": {
@@ -829,6 +842,26 @@
       },
       "pixels": "pixels",
       "resizeToFit": "Redimensionner pour ajuster"
+    },
+    "result": {
+      "cancelled": "Exportation annulée",
+      "dismiss": "Fermer",
+      "imageErrors": "Images échouées",
+      "statusCancelled": "annulé",
+      "statusFailed": "échoué",
+      "statusSucceeded": "réussi",
+      "statusTimedOut": "délai dépassé",
+      "statusWarned": "avec avertissements",
+      "stderr": "Sortie du flux de travail",
+      "summary": "{{succeeded}} sur {{total}} exportées",
+      "warningPrefix": "Avertissement",
+      "workflowFailures_one": "{{count}} exécution de flux de travail échouée",
+      "workflowFailures_many": "{{count}} exécutions de flux de travail échouées",
+      "workflowFailures_other": "{{count}} exécutions de flux de travail échouées",
+      "workflowRuns": "Exécutions de flux de travail",
+      "workflowWarnings_one": "{{count}} avertissement de flux de travail",
+      "workflowWarnings_many": "{{count}} avertissements de flux de travail",
+      "workflowWarnings_other": "{{count}} avertissements de flux de travail"
     },
     "sections": {
       "advanced": "Avancé",
@@ -878,6 +911,38 @@
       "scale": "Échelle",
       "spacing": "Espacement",
       "watermarkImage": "Image en filigrane"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "J'ai compris, exécuter les workflows",
+        "decline": "Annuler l'export",
+        "discoveryLocations": "Les workflows proviennent des exemples intégrés et de votre dossier ~/.rapidraw/workflows. Vous pouvez y vérifier ou supprimer les workflows installés à tout moment.",
+        "fullPermissions": "Les workflows s'exécutent avec vos pleins droits utilisateur : ils peuvent lire, modifier et supprimer tout fichier accessible, et accéder au réseau.",
+        "intro": "Cet export exécutera {{selected}} workflow(s) sur votre ordinateur. Merci de confirmer avant la première exécution :",
+        "noSandbox": "RapidRAW n'isole pas (sandbox) les workflows. Les délais et limites de sortie encadrent une exécution, mais ne restreignent pas ce qu'un workflow peut faire de vos fichiers.",
+        "onlyTrustedSources": "N'exécutez que des workflows de sources fiables. N'installez jamais un workflow d'un inconnu.",
+        "title": "Exécuter les workflows d'export locaux ?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {

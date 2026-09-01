@@ -74,7 +74,9 @@ modules:
       - install -Dm644 src-tauri/icons/icon.png /app/share/icons/hicolor/256x256@2/apps/io.github.CyberTimon.RapidRAW.png
 
       - mkdir -p /app/lib/RapidRAW
+      # Tauri resolves the resource directory to <exe>/../lib/RapidRAW on Linux,
+      # so this matches the tauri.conf.json bundle.resources layout; the bundled
+      # export workflows ship inside resources/workflows.
       - cp -rf src-tauri/resources /app/lib/RapidRAW
-      - cp -rf src-tauri/workflows /app/lib/RapidRAW
 
       - install -Dm644 LICENSE /app/share/licenses/io.github.CyberTimon.RapidRAW/LICENSE
