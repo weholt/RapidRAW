@@ -38,8 +38,7 @@ fn corpus_root() -> PathBuf {
     if let Ok(root) = std::env::var("LAP_RAW_CORPUS_ROOT") {
         return PathBuf::from(root);
     }
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../lap/tests/fixtures/raw-development")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../lap/tests/fixtures/raw-development")
 }
 
 fn read_json(path: &Path) -> serde_json::Value {
@@ -54,7 +53,7 @@ fn sha256_file(path: &Path) -> String {
     hex::encode(hasher.finalize())
 }
 
-fn entries<'a>(manifest: &'a serde_json::Value) -> Vec<&'a serde_json::Value> {
+fn entries(manifest: &serde_json::Value) -> Vec<&serde_json::Value> {
     manifest["files"]
         .as_array()
         .unwrap_or_else(|| panic!("corpus manifest is missing the files array"))
@@ -115,7 +114,9 @@ fn every_corpus_entry_records_provenance_and_permitted_use() {
         );
         if origin == "rawdb.dnglab.org" {
             assert!(
-                entry["sourceUrl"].as_str().is_some_and(|u| u.starts_with("https://rawdb.dnglab.org/")),
+                entry["sourceUrl"]
+                    .as_str()
+                    .is_some_and(|u| u.starts_with("https://rawdb.dnglab.org/")),
                 "corpus entry {rel} from rawdb must record its source URL"
             );
         }
@@ -157,13 +158,10 @@ fn corpus_covers_required_raw_categories() {
     categories.dedup();
 
     let large = entries(&manifest).iter().any(|e| {
-        e["decodedDimensions"].as_array().is_some_and(|dims| {
-            dims.iter()
-                .filter_map(|d| d.as_u64())
-                .any(|d| d > 4096)
-        }) || e["maxDimension"]
-            .as_u64()
-            .is_some_and(|d| d > 4096)
+        e["decodedDimensions"]
+            .as_array()
+            .is_some_and(|dims| dims.iter().filter_map(|d| d.as_u64()).any(|d| d > 4096))
+            || e["maxDimension"].as_u64().is_some_and(|d| d > 4096)
     });
     assert!(
         large,
@@ -203,17 +201,23 @@ fn baseline_manifest_pins_engine_revision_decode_options_and_outputs() {
     });
     for source in RENDER_RELEVANT_SOURCES {
         assert!(
-            hashes.get(*source).is_some_and(|v| v.as_str().is_some_and(|h| h.len() == 64)),
+            hashes
+                .get(*source)
+                .is_some_and(|v| v.as_str().is_some_and(|h| h.len() == 64)),
             "baseline engine pin is missing source {source}"
         );
     }
 
     assert!(
-        engine["gpu"]["backend"].as_str().is_some_and(|b| !b.is_empty()),
+        engine["gpu"]["backend"]
+            .as_str()
+            .is_some_and(|b| !b.is_empty()),
         "baseline must record the GPU backend used for capture"
     );
     assert!(
-        engine["gpu"]["adapter"].as_str().is_some_and(|a| !a.is_empty()),
+        engine["gpu"]["adapter"]
+            .as_str()
+            .is_some_and(|a| !a.is_empty()),
         "baseline must record the GPU adapter used for capture"
     );
 
@@ -248,22 +252,35 @@ fn baseline_manifest_pins_engine_revision_decode_options_and_outputs() {
             case["fixture"].as_str().is_some(),
             "baseline case {preset} does not name its fixture"
         );
+        // Failure-expectation cases pin explicit rejection (nonzero exit +
+        // logged error evidence), never a render checksum.
+        if case["expectFailure"].as_bool().unwrap_or(false) {
+            assert!(
+                case["exitCode"].as_i64().is_some_and(|c| c != 0),
+                "failure-expectation case {preset} must record a nonzero exit code"
+            );
+            assert!(
+                case["errorEvidence"]
+                    .as_str()
+                    .is_some_and(|e| !e.is_empty()),
+                "failure-expectation case {preset} must record logged error evidence"
+            );
+            continue;
+        }
         assert!(
             case["outputSha256"].as_str().is_some_and(|h| h.len() == 64),
             "baseline case {preset} lacks an output checksum"
         );
         assert!(
-            case["outputDimensions"].as_array().is_some_and(|d| d.len() == 2),
+            case["outputDimensions"]
+                .as_array()
+                .is_some_and(|d| d.len() == 2),
             "baseline case {preset} lacks output dimensions"
         );
     }
     let per_adjustment = cases
         .iter()
-        .filter(|c| {
-            c["kind"]
-                .as_str()
-                .is_some_and(|k| k == "per-adjustment")
-        })
+        .filter(|c| c["kind"].as_str().is_some_and(|k| k == "per-adjustment"))
         .count();
     assert!(
         per_adjustment >= 5,
@@ -292,9 +309,12 @@ fn render_relevant_engine_sources_still_match_the_pinned_baseline() {
     let hashes = manifest["engine"]["renderSourceSha256"]
         .as_object()
         .expect("pinned render source hashes");
-    let engine_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().expect(
-        "resolve engine repository root",
-    );
+    // CARGO_MANIFEST_DIR is src-tauri, so the engine root is one level up
+    // (unlike corpus_root, which crosses ../.. to the sibling Lap checkout).
+    let engine_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .canonicalize()
+        .expect("resolve engine repository root");
     for (source, pinned) in hashes {
         let pinned = pinned.as_str().unwrap_or_default().to_lowercase();
         let file = engine_root.join(source);
