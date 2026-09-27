@@ -2,7 +2,12 @@ import { useEffect, useRef } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { Status } from '../components/ui/ExportImportProperties';
-import { useProcessStore } from '../store/useProcessStore';
+import type {
+  ExportResultDetail,
+  ImportProgressEvent,
+  WorkflowProgressEvent,
+} from '../components/ui/ExportImportProperties';
+import { acceptsWorkflowProgressEvent, useProcessStore } from '../store/useProcessStore';
 import { useEditorStore } from '../store/useEditorStore';
 import { useUIStore } from '../store/useUIStore';
 import { useLibraryStore } from '../store/useLibraryStore';
@@ -31,6 +36,7 @@ export function useTauriListeners({
   const ratingBuffer = useRef<Record<string, number>>({});
   const editStatusBuffer = useRef<Record<string, boolean>>({});
   const flushHandle = useRef<number | null>(null);
+  const refreshedImportPlans = useRef(new Set<string>());
 
   useEffect(() => {
     let isEffectActive = true;
@@ -160,6 +166,17 @@ export function useTauriListeners({
       listen('batch-export-progress', (event: any) => {
         if (isEffectActive) useProcessStore.getState().setExportState({ progress: event.payload });
       }),
+      listen('workflow-progress', (event: any) => {
+        if (!isEffectActive) return;
+        const payload = event.payload as WorkflowProgressEvent;
+        const { exportState, setExportState } = useProcessStore.getState();
+        // Stale-run rejection: only the tracked live run may update the state.
+        if (!acceptsWorkflowProgressEvent(exportState, payload)) return;
+        setExportState({ workflow: payload });
+      }),
+      listen('export-result', (event: any) => {
+        if (isEffectActive) useProcessStore.getState().setExportState({ result: event.payload as ExportResultDetail });
+      }),
       listen('export-complete', () => {
         if (isEffectActive) useProcessStore.getState().setExportState({ status: Status.Success });
       }),
@@ -186,11 +203,34 @@ export function useTauriListeners({
           });
       }),
       listen('import-progress', (event: any) => {
-        if (isEffectActive)
+        if (isEffectActive) {
+          const payload = event.payload as ImportProgressEvent & { path?: string };
           useProcessStore.getState().setImportState({
-            path: event.payload.path,
-            progress: { current: event.payload.current, total: event.payload.total },
+            path: payload.sourcePath ?? payload.path ?? '',
+            progress: { current: payload.current, total: payload.total },
+            phase: payload.phase,
+            planId: payload.planId,
+            bytesCompleted: payload.bytesCompleted,
+            bytesTotal: payload.bytesTotal,
+            ...(payload.phase === 'cancelled' ? { status: Status.Cancelled } : {}),
           });
+          if (
+            (payload.phase === 'complete' || payload.phase === 'cancelled') &&
+            payload.planId &&
+            !refreshedImportPlans.current.has(payload.planId)
+          ) {
+            refreshedImportPlans.current.add(payload.planId);
+            // Bound the dedup set so long-running sessions do not accumulate
+            // one entry per finished plan.
+            if (refreshedImportPlans.current.size > 64) {
+              refreshedImportPlans.current.clear();
+              refreshedImportPlans.current.add(payload.planId);
+            }
+            refs.current.refreshAllFolderTrees();
+            const currentPath = useLibraryStore.getState().currentFolderPath;
+            if (currentPath) refs.current.handleSelectSubfolder(currentPath, false);
+          }
+        }
       }),
       listen('import-complete', () => {
         if (isEffectActive) {

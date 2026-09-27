@@ -22,6 +22,7 @@ import {
   ArrowUpDown,
   Check,
   MoveRight,
+  type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
@@ -81,7 +82,7 @@ interface VisibleProps {
   total: number;
 }
 
-const ALBUM_ICONS: Record<string, React.ElementType> = {
+const ALBUM_ICONS: Record<string, LucideIcon> = {
   plane: Plane,
   mountain: Mountain,
   sun: Sun,
@@ -766,7 +767,7 @@ export default function FolderTree({
   const filteredAlbumTree = useMemo(() => {
     let base = albumTree;
     if (isSearching) {
-      base = base.map((item: any) => filterAlbumTree(item, trimmedQuery)).filter((t: any) => t !== null);
+      base = base.map((item: any) => filterAlbumTree(item, trimmedQuery)).filter((t): t is AlbumItem => t !== null);
     }
     return base;
   }, [albumTree, trimmedQuery, isSearching]);

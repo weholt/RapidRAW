@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Progress } from '../components/ui/AppProperties';
-import { ExportState, ImportState, Status } from '../components/ui/ExportImportProperties';
+import { ExportState, ImportState, Status, WorkflowProgressEvent } from '../components/ui/ExportImportProperties';
 
 export interface ExternalEditSession {
   source: string;
@@ -27,20 +27,41 @@ interface ProcessState {
 
   setProcess: (state: Partial<ProcessState> | ((state: ProcessState) => Partial<ProcessState>)) => void;
   setExportState: (updater: Partial<ExportState> | ((state: ExportState) => Partial<ExportState>)) => void;
+  dismissExportResult: () => void;
   setImportState: (updater: Partial<ImportState> | ((state: ImportState) => Partial<ImportState>)) => void;
   setPreview: (path: string, url: string, thumbKey: string) => void;
   clearPreviews: () => void;
 }
 
-let exportTimeout: ReturnType<typeof setTimeout>;
-let importTimeout: ReturnType<typeof setTimeout>;
+/**
+ * Whether a workflow-progress event may update the export state. Events from
+ * any run other than the tracked one are stale, and once the export reached a
+ * terminal state no event may alter it anymore; a new export resets the
+ * tracked run when it starts.
+ */
+export function acceptsWorkflowProgressEvent(exportState: ExportState, payload: WorkflowProgressEvent): boolean {
+  const live = exportState.status === Status.Exporting || exportState.status === Status.Cancelling;
+  if (!live) return false;
+  if (exportState.workflow) {
+    return exportState.workflow.runId === payload.runId;
+  }
+  return true;
+}
+
 let copyTimeout: ReturnType<typeof setTimeout>;
 let pasteTimeout: ReturnType<typeof setTimeout>;
+let importStatusTimeout: ReturnType<typeof setTimeout>;
 
 const MAX_PREVIEW_CACHE_SIZE = 10;
 
 export const useProcessStore = create<ProcessState>((set, get) => ({
-  exportState: { errorMessage: '', progress: { current: 0, total: 0 }, status: Status.Idle },
+  exportState: {
+    errorMessage: '',
+    progress: { current: 0, total: 0 },
+    status: Status.Idle,
+    workflow: null,
+    result: null,
+  },
   importState: { errorMessage: '', path: '', progress: { current: 0, total: 0 }, status: Status.Idle },
   isIndexing: false,
   indexingProgress: { current: 0, total: 0 },
@@ -76,23 +97,21 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
     set((prev) => ({
       exportState: { ...prev.exportState, ...(typeof updater === 'function' ? updater(prev.exportState) : updater) },
     }));
+    // Terminal export details remain inspectable until dismissed or a new
+    // export starts; there is no auto-reset.
+  },
 
-    const status = get().exportState.status;
-
-    clearTimeout(exportTimeout);
-
-    if ([Status.Success, Status.Error, Status.Cancelled].includes(status)) {
-      exportTimeout = setTimeout(() => {
-        set((prev) => ({
-          exportState: {
-            ...prev.exportState,
-            status: Status.Idle,
-            errorMessage: '',
-            progress: { current: 0, total: 0 },
-          },
-        }));
-      }, 5000);
-    }
+  dismissExportResult: () => {
+    set((prev) => ({
+      exportState: {
+        ...prev.exportState,
+        status: Status.Idle,
+        errorMessage: '',
+        workflow: null,
+        result: null,
+        progress: { current: 0, total: 0 },
+      },
+    }));
   },
 
   setImportState: (updater) => {
@@ -100,12 +119,14 @@ export const useProcessStore = create<ProcessState>((set, get) => ({
       importState: { ...prev.importState, ...(typeof updater === 'function' ? updater(prev.importState) : updater) },
     }));
 
+    // The header status indicator is transient: once the import settles, the
+    // status resets to idle after a delay so the library header does not show
+    // a stale "complete"/"failed" badge forever. The detailed result, phase,
+    // and plan id stay inspectable until the next import replaces them.
     const status = get().importState.status;
-
-    clearTimeout(importTimeout);
-
+    clearTimeout(importStatusTimeout);
     if ([Status.Success, Status.Error, Status.Cancelled].includes(status)) {
-      importTimeout = setTimeout(() => {
+      importStatusTimeout = setTimeout(() => {
         set((prev) => ({
           importState: {
             ...prev.importState,

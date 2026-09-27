@@ -30,7 +30,7 @@ export const PANEL_ICONS: Record<Panel, LucideIcon> = {
   [Panel.Tethering]: Camera,
 };
 
-const PANEL_TITLES: Record<Panel, string> = {
+const PANEL_TITLES = {
   [Panel.Metadata]: 'editor.switcher.tooltips.info',
   [Panel.Adjustments]: 'editor.switcher.tooltips.adjust',
   [Panel.Crop]: 'editor.switcher.tooltips.crop',
@@ -40,7 +40,7 @@ const PANEL_TITLES: Record<Panel, string> = {
   [Panel.Export]: 'editor.switcher.tooltips.export',
   [Panel.FolderTree]: 'library.folders.sourcesTitle',
   [Panel.Tethering]: 'editor.switcher.tooltips.tethering',
-};
+} as const;
 
 function PanelTab({ panel, region, side }: { panel: Panel; region: PanelRegion; side: 'left' | 'right' }) {
   const { t } = useTranslation();

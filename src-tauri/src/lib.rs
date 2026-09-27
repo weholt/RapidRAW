@@ -25,6 +25,7 @@ mod gpu_processing;
 mod hdr_deghosting;
 mod image_loader;
 mod image_processing;
+pub mod import_processing;
 mod inpainting;
 mod launch_request;
 mod lens_blur;
@@ -2310,6 +2311,11 @@ pub fn run() {
             app_settings::load_settings,
             app_settings::save_settings,
             app_settings::is_tethering_supported,
+            import_processing::create_import_plan,
+            import_processing::get_import_preview_page,
+            import_processing::execute_import_plan,
+            import_processing::cancel_import,
+            import_processing::import_android_content_files,
             ai_commands::generate_ai_subject_mask,
             ai_commands::precompute_ai_subject_mask,
             ai_commands::generate_ai_foreground_mask,
