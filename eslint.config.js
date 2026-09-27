@@ -21,6 +21,7 @@ module.exports = [
       'src-tauri/target/**',
       'src-tauri/gen/**',
       'src-tauri/rawler/**',
+      'crates/rapidraw-edit-model/gen/**',
       'data/**',
     ],
   },

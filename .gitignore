@@ -28,6 +28,9 @@ dist-ssr
 # Machine-local cargo toolchain pin (see AGENTS.md, rapidraw-3cb)
 .cargo/config.toml
 
+# rapidraw-edit-model crate build artifacts (rapidraw-f53)
+/crates/rapidraw-edit-model/target/
+
 # dynamic libraries downloaded by 'ort' crate at build time
 src-tauri/resources/libonnxruntime.so
 src-tauri/resources/libonnxruntime.dylib
