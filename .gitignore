@@ -47,3 +47,4 @@ src-tauri/libs/
 
 # bench/replay.js result dumps
 bench/out/
+/crates/rapidraw-develop/target/

@@ -15,6 +15,7 @@ tethering = ["dep:gphoto2"]
 
 [dependencies]
 rapidraw-edit-model = { path = "../crates/rapidraw-edit-model" }
+rapidraw-develop = { path = "../crates/rapidraw-develop" }
 tauri = { version = "2.11", features = [ "macos-private-api", "rustls-tls", "protocol-asset" ] }
 tauri-plugin-dialog = "2.7.2"
 serde = { version = "1.0", features = ["derive"] }
@@ -29,7 +30,7 @@ pollster = "1.0"
 bytemuck = { version = "1.25", features = ["derive"] }
 anyhow = "1.0.104"
 kamadak-exif = "0.6.1"
-rawler = { git = "https://github.com/CyberTimon/RapidRAW-DngLab.git" }
+rawler = { git = "https://github.com/CyberTimon/RapidRAW-DngLab.git", rev = "3289454e9a65f5c973594687cca35602fa8181e3" }
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.25", features = ["v4", "serde"] }
 walkdir = "2.5.0"
