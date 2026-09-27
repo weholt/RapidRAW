@@ -382,7 +382,9 @@ fn process_preview_job(
             cached.unscaled_crop_offset,
         )
     } else {
-        *state.gpu_image_cache.lock().unwrap() = None;
+        if let Some(renderer) = state.gpu_renderer.lock().unwrap().as_ref() {
+            renderer.clear_image_cache();
+        }
 
         let (base, scale, offset) =
             generate_transformed_preview(&state, &loaded_image, &adjustments_clone, preview_dim)?;
@@ -411,8 +413,11 @@ fn process_preview_job(
             Arc::clone(&final_preview_base)
         };
 
-        if is_interactive && base_valid {
-            *state.gpu_image_cache.lock().unwrap() = None;
+        if is_interactive
+            && base_valid
+            && let Some(renderer) = state.gpu_renderer.lock().unwrap().as_ref()
+        {
+            renderer.clear_image_cache();
         }
 
         small
@@ -2244,8 +2249,7 @@ pub fn run() {
             original_image: Mutex::new(None),
             cached_preview: Mutex::new(None),
             gpu_context: Mutex::new(None),
-            gpu_image_cache: Mutex::new(None),
-            gpu_processor: Mutex::new(None),
+            gpu_renderer: Mutex::new(None),
             ai_state: Mutex::new(None),
             ai_init_lock: TokioMutex::new(()),
             export_task_token: Arc::new(Mutex::new(None)),

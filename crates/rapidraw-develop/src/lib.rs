@@ -36,6 +36,7 @@ pub mod buffer;
 pub mod decode;
 pub mod error;
 pub mod geometry;
+pub mod gpu;
 pub mod wb;
 
 pub use buffer::LinearImage;
