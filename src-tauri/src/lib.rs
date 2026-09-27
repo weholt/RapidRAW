@@ -33,7 +33,6 @@ mod lens_blur;
 mod lens_correction;
 mod lut_processing;
 mod mask_generation;
-mod multi_exposure;
 mod negative_conversion;
 mod panorama_stitching;
 mod panorama_utils;

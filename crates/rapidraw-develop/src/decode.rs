@@ -67,6 +67,20 @@ impl CancelToken {
         (source.clone(), CancelToken { source, generation })
     }
 
+    /// Bind to an externally owned `(tracker, generation)` cancellation pair
+    /// (the Tauri host's shared loader-tracker shape). The token observes the
+    /// same counter the host bumps, so host-side cancellation semantics are
+    /// preserved without wrapping the tracker.
+    pub fn from_shared_parts(
+        tracker: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+        generation: usize,
+    ) -> Self {
+        Self {
+            source: CancelSource(tracker),
+            generation,
+        }
+    }
+
     pub fn is_cancelled(&self) -> bool {
         use std::sync::atomic::Ordering;
         self.source.0.load(Ordering::SeqCst) != self.generation
