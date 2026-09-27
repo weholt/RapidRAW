@@ -37,6 +37,7 @@ pub mod decode;
 pub mod error;
 pub mod geometry;
 pub mod gpu;
+pub mod session;
 pub mod wb;
 
 pub use buffer::LinearImage;
@@ -50,4 +51,11 @@ pub use geometry::{
     apply_pixel_crop, crop_to_source_rect, oriented_dimensions, oriented_to_source_pixel,
 };
 pub use rapidraw_edit_model::types::{CropRect, LinearRawMode, ToneMapper};
+pub use session::{
+    ClosedSession, CommitResult, ExportFrame, ExportJob, ExportJobId, ExportOutcome,
+    ExportRenderer, ExportTicket, OpenSessionRequest, OpenedSession, PreviewCacheKey, PreviewFrame,
+    PreviewJob, PreviewOutcome, PreviewQuality, PreviewRenderer, PreviewRequest, PreviewTicket,
+    PreviewTicketInfo, RecipeStore, SessionDiagnostics, SessionError, SessionId, SessionInfo,
+    SessionManager, SessionManagerConfig,
+};
 pub use wb::{WhiteBalancePolicy, neutralize_wb_if_multiexposure};
