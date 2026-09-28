@@ -488,21 +488,28 @@ fn calculate_agx_matrices() -> (GpuMat3, GpuMat3) {
 }
 
 /// A visible mask definition, mirroring the frontend mask object subset the
-/// pre-extraction host consumed. Field requirements match
-/// `mask_generation::MaskDefinition` (id, name, visible, invert, adjustments
-/// and sub_masks required, opacity defaulted to 100.0) so malformed mask
-/// arrays fail parsing and are skipped exactly like the host did. Sub-mask
-/// payloads stay opaque here: sub-mask expansion happens host-side before a
-/// render request is built.
+/// pre-extraction host consumed. Parsing is tolerant per field (a missing
+/// `visible` defaults to false, never silently on) and masks are decoded
+/// individually so one malformed entry skips itself instead of dropping the
+/// whole list. Both the typed recipe serialization and the legacy frontend
+/// payload use the camelCase `subMasks` key; sub-mask payloads stay opaque
+/// here because sub-mask expansion happens host-side before a render request
+/// is built.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MaskDefinition {
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub name: String,
+    #[serde(default)]
     pub visible: bool,
+    #[serde(default)]
     pub invert: bool,
     #[serde(default = "default_mask_opacity")]
     pub opacity: f32,
+    #[serde(default)]
     pub adjustments: serde_json::Value,
+    #[serde(rename = "subMasks", default)]
     pub sub_masks: Vec<serde_json::Value>,
 }
 
@@ -961,7 +968,20 @@ pub fn get_all_adjustments_from_json(
 
     let mask_definitions: Vec<MaskDefinition> = js_adjustments
         .get("masks")
-        .and_then(|m| serde_json::from_value(m.clone()).ok())
+        .and_then(|m| m.as_array())
+        .map(|list| {
+            list.iter()
+                .filter_map(
+                    |value| match serde_json::from_value::<MaskDefinition>(value.clone()) {
+                        Ok(def) => Some(def),
+                        Err(err) => {
+                            log::warn!("skipping malformed mask definition: {err}");
+                            None
+                        }
+                    },
+                )
+                .collect()
+        })
         .unwrap_or_default();
 
     for (i, mask_def) in mask_definitions

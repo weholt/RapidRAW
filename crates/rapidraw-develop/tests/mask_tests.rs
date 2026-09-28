@@ -774,6 +774,45 @@ fn cache_respects_geometry_and_frame_in_its_key() {
 // ---------------------------------------------------------------------------
 
 #[test]
+fn typed_recipe_json_feeds_mask_adjustments_to_the_gpu_path() {
+    // The engine's mask JSON decoder must understand the typed recipe
+    // serialization (`subMasks`, camelCase) so mask influence actually
+    // reaches the shader; a parse failure would silently drop every mask
+    // adjustment while bitmaps still apply.
+    let recipe = rapidraw_edit_model::Recipe {
+        masks: vec![rapidraw_edit_model::MaskContainer {
+            id: "m".to_string(),
+            name: "radial".to_string(),
+            visible: true,
+            adjustments: rapidraw_edit_model::MaskLocalAdjustments {
+                exposure: -1.0,
+                ..Default::default()
+            },
+            sub_masks: vec![rapidraw_edit_model::SubMask {
+                id: "s".to_string(),
+                kind: "all".to_string(),
+                geometry: Some(MaskGeometry::All),
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let json = serde_json::to_value(&recipe).expect("recipe serializes");
+    let adjustments = rapidraw_develop::gpu::get_all_adjustments_from_json(&json, true, None);
+    assert_eq!(
+        adjustments.mask_count, 1,
+        "the visible mask must be counted"
+    );
+    let exposure = adjustments.mask_adjustments[0].exposure;
+    // The engine's exposure scale is 0.8 (recipe -1.0 -> uniform -1.25).
+    assert!(
+        (exposure - (-1.25)).abs() < 1e-6,
+        "the mask's exposure must reach the uniform payload, got {exposure}"
+    );
+}
+
+#[test]
 fn legacy_parameter_payload_survives_conversion_and_rasterization() {
     // A legacy pixel payload converts via edit-model, then rasterizes with
     // the same result as a natively authored typed geometry.
