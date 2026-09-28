@@ -26,6 +26,8 @@ export interface ColorGrading { [zone: string]: number | HueSatLum; balance: num
 export interface ColorCalibration { shadowsTint: number; redHue: number; redSaturation: number; greenHue: number; greenSaturation: number; blueHue: number; blueSaturation: number; }
 export interface CropRect { x: number; y: number; width: number; height: number; }
 export interface LensDistortionParams { k1: number; k2: number; k3: number; model: number; tca_vr: number; tca_vb: number; vig_k1: number; vig_k2: number; vig_k3: number; }
+/** Provenance of the lens profile the persisted lensDistortionParams were resolved from. */
+export interface LensProfileRef { uri: string; maker: string; model: string; version: string; sha256: string; }
 export interface SectionVisibility { [section: string]: boolean; basic: boolean; curves: boolean; color: boolean; details: boolean; effects: boolean; }
 export interface MaskSectionVisibility { [section: string]: boolean; basic: boolean; curves: boolean; color: boolean; details: boolean; effects: boolean; }
 /**
@@ -97,6 +99,7 @@ export interface Recipe {
   lensDistortionAmount: number; lensVignetteAmount: number; lensTcaAmount: number;
   lensDistortionEnabled: boolean; lensTcaEnabled: boolean; lensVignetteEnabled: boolean;
   lensDistortionParams: LensDistortionParams | null;
+  lensProfile: LensProfileRef | null;
   masks: MaskContainer[];
   sectionVisibility: SectionVisibility;
   sectionOrder: SectionId[];
@@ -380,6 +383,7 @@ export const DEFAULT_RECIPE: Recipe = {
   "lensTcaEnabled": true,
   "lensVignetteEnabled": true,
   "lensDistortionParams": null,
+  "lensProfile": null,
   "masks": [],
   "sectionVisibility": {
     "basic": true,

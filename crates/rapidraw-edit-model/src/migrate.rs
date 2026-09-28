@@ -103,6 +103,7 @@ pub const RECIPE_KEYS: &[&str] = &[
     "lensTcaEnabled",
     "lensVignetteEnabled",
     "lensDistortionParams",
+    "lensProfile",
     "masks",
     "sectionVisibility",
     "sectionOrder",

@@ -70,6 +70,9 @@ pub fn validate_recipe(recipe: &Recipe) -> Result<(), ModelError> {
     )?;
     check_opt_string(recipe.lens_maker.as_deref(), "recipe.lensMaker", 120)?;
     check_opt_string(recipe.lens_model.as_deref(), "recipe.lensModel", 120)?;
+    if let Some(profile) = &recipe.lens_profile {
+        validate_lens_profile(profile)?;
+    }
     if recipe.orientation_steps > 3 {
         return Err(ModelError::Validation(format!(
             "recipe.orientationSteps {} outside 0..=3",
@@ -321,6 +324,60 @@ fn validate_color_calibration(
     ] {
         check_num(value, &format!("{path}.{field}"), -100.0, 100.0)?;
     }
+    Ok(())
+}
+
+/// Lowercase-hex SHA-256 digest check shared by lens-profile validation.
+fn is_lower_hex_digest(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+fn validate_lens_profile(profile: &crate::types::LensProfileRef) -> Result<(), ModelError> {
+    let path = "recipe.lensProfile";
+    check_string(&profile.uri, path, 128)?;
+    let Some(digest) = profile.uri.strip_prefix("resource://lens/") else {
+        return Err(ModelError::Validation(format!(
+            "{path}.uri must be a resource://lens/<sha256> reference, got '{}'",
+            profile.uri
+        )));
+    };
+    if !is_lower_hex_digest(digest) {
+        return Err(ModelError::Validation(format!(
+            "{path}.uri digest must be 64 lowercase hex characters"
+        )));
+    }
+    if !is_lower_hex_digest(&profile.sha256) {
+        return Err(ModelError::Validation(format!(
+            "{path}.sha256 must be 64 lowercase hex characters"
+        )));
+    }
+    if digest != profile.sha256 {
+        return Err(ModelError::Validation(format!(
+            "{path}.uri digest {digest} does not match sha256 {}",
+            profile.sha256
+        )));
+    }
+    if profile.maker.is_empty() {
+        return Err(ModelError::Validation(format!(
+            "{path}.maker must not be empty"
+        )));
+    }
+    check_string(&profile.maker, &format!("{path}.maker"), 120)?;
+    if profile.model.is_empty() {
+        return Err(ModelError::Validation(format!(
+            "{path}.model must not be empty"
+        )));
+    }
+    check_string(&profile.model, &format!("{path}.model"), 120)?;
+    if profile.version.is_empty() {
+        return Err(ModelError::Validation(format!(
+            "{path}.version must not be empty (use 'unversioned' when the source carries no version)"
+        )));
+    }
+    check_string(&profile.version, &format!("{path}.version"), 120)?;
     Ok(())
 }
 
@@ -593,6 +650,26 @@ impl RecipeEnvelope {
         }
         self.decode.validate()?;
         self.recipe.validate()?;
+
+        // A recipe's lens-profile provenance must have its content-addressed
+        // resource entry, and the entry's digest must agree with the recipe's
+        // recorded hash — otherwise renders could never verify the
+        // coefficients against the profile bytes they claim to come from.
+        if let Some(profile) = &self.recipe.lens_profile {
+            let expected_key = format!("lens/{}", profile.sha256);
+            let entry = self.resources.get(&expected_key).ok_or_else(|| {
+                ModelError::Validation(format!(
+                    "recipe.lensProfile references {} but the resource map has no '{expected_key}' entry",
+                    profile.uri
+                ))
+            })?;
+            if entry.digest != profile.sha256 {
+                return Err(ModelError::Validation(format!(
+                    "recipe.lensProfile sha256 {} disagrees with the resources['{expected_key}'] digest {}",
+                    profile.sha256, entry.digest
+                )));
+            }
+        }
 
         if self.resources.len() > MAX_RESOURCE_ENTRIES {
             return Err(ModelError::Validation(

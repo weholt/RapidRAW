@@ -381,6 +381,30 @@ pub struct LensDistortionParams {
     pub vig_k3: f64,
 }
 
+/// Provenance of the lens-correction profile that produced the recipe's
+/// `lensDistortionParams` (lap-d52): identity (maker/model), an explicit
+/// version label, the profile content hash, and the portable resource URI.
+/// The envelope's resource map must carry the matching `lens/<sha256>` entry
+/// so renders can verify the coefficients were not computed from different
+/// profile bytes; a missing entry fails validation, and a missing/changed
+/// resource object fails the render explicitly instead of silently changing
+/// the export.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LensProfileRef {
+    /// `resource://lens/<64-hex sha256>`; never an absolute path.
+    pub uri: String,
+    /// Lens maker as recorded by the profile (display form).
+    pub maker: String,
+    /// Lens model as recorded by the profile (canonical form).
+    pub model: String,
+    /// Explicit version label of the profile data (`unversioned` when the
+    /// source carries none). Never invented by the engine.
+    pub version: String,
+    /// Lowercase hex SHA-256 of the profile bytes; equals the URI digest.
+    pub sha256: String,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum SubMaskMode {
     #[serde(rename = "additive")]
@@ -644,6 +668,8 @@ pub struct Recipe {
     pub lens_tca_enabled: bool,
     pub lens_vignette_enabled: bool,
     pub lens_distortion_params: Option<LensDistortionParams>,
+    /// Provenance of the profile the coefficients were resolved from.
+    pub lens_profile: Option<LensProfileRef>,
     // Masks
     pub masks: Vec<MaskContainer>,
     // Section bypass state and canonical operation order
@@ -733,6 +759,7 @@ impl Default for Recipe {
             lens_tca_enabled: true,
             lens_vignette_enabled: true,
             lens_distortion_params: None,
+            lens_profile: None,
             masks: Vec::new(),
             section_visibility: SectionVisibility::default(),
             section_order: SectionId::ALL.to_vec(),

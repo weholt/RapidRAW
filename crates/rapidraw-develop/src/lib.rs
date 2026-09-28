@@ -37,6 +37,7 @@ pub mod decode;
 pub mod error;
 pub mod geometry;
 pub mod gpu;
+pub mod lens;
 pub mod masks;
 pub mod session;
 pub mod wb;
@@ -50,6 +51,12 @@ pub use error::DevelopError;
 pub use geometry::{
     PixelRect, apply_coarse_rotation, apply_crop_normalized, apply_flip, apply_orientation,
     apply_pixel_crop, crop_to_source_rect, oriented_dimensions, oriented_to_source_pixel,
+};
+pub use lens::{
+    Aperture, Calibration, CalibrationElement, Camera, Distortion, Focal, Lens,
+    LensCapabilityNotice, LensDatabase, LensError, LensWarpParams, MultiName, Tca, Vignetting,
+    find_best_lens_match, lens_auto_crop_scale, lens_warp, lenses_for_maker, parse_lensfun_db,
+    resolve_lens_params,
 };
 pub use masks::{
     BoundedMaskCache, MASK_CACHE_MAX_ENTRIES, MaskRasterError, MaskRasterFrame,
