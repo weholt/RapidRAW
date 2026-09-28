@@ -392,9 +392,12 @@ pub enum SubMaskMode {
     Intersect,
 }
 
-/// One sub-mask. Masks are a subsequent engine increment: the geometry payload
-/// (`parameters`) is preserved opaquely and size-bounded rather than modeled,
-/// so unsupported mask payloads survive a round trip instead of being dropped.
+/// One sub-mask. The geometry payload (`parameters`) is preserved opaquely
+/// and size-bounded so payloads this schema cannot model survive a round
+/// trip instead of being dropped. Supported non-AI kinds additionally carry
+/// validated typed geometry in `geometry` (see [`crate::masks`]); a
+/// supported kind whose legacy payload could not be converted has
+/// `geometry: None` and fails explicitly at render time.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubMask {
@@ -407,8 +410,12 @@ pub struct SubMask {
     /// Mask kind (`brush`, `linear`, `radial`, `luminance`, ...), legacy key `type`.
     #[serde(rename = "type")]
     pub kind: String,
-    /// Opaque, size-bounded geometry/brush payload.
+    /// Opaque, size-bounded geometry/brush payload (legacy fidelity).
     pub parameters: Value,
+    /// Typed, validated geometry for supported kinds; `None` for unsupported
+    /// kinds or unconvertible payloads.
+    #[serde(default)]
+    pub geometry: Option<crate::masks::MaskGeometry>,
 }
 
 impl Default for SubMask {
@@ -422,6 +429,7 @@ impl Default for SubMask {
             mode: SubMaskMode::Additive,
             kind: String::new(),
             parameters: Value::Null,
+            geometry: None,
         }
     }
 }

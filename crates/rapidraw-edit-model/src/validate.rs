@@ -499,6 +499,14 @@ fn validate_sub_mask(sub_mask: &SubMask, path: &str) -> Result<(), ModelError> {
             "{path}.parameters payload exceeds {MAX_SUB_MASK_PARAMETERS_BYTES} bytes"
         )));
     }
+    if let Some(geometry) = &sub_mask.geometry {
+        geometry.validate().map_err(|err| match err {
+            ModelError::Validation(detail) => {
+                ModelError::Validation(format!("{path}.geometry: {detail}"))
+            }
+            other => other,
+        })?;
+    }
     Ok(())
 }
 

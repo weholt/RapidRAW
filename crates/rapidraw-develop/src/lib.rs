@@ -37,6 +37,7 @@ pub mod decode;
 pub mod error;
 pub mod geometry;
 pub mod gpu;
+pub mod masks;
 pub mod session;
 pub mod wb;
 
@@ -49,6 +50,10 @@ pub use error::DevelopError;
 pub use geometry::{
     PixelRect, apply_coarse_rotation, apply_crop_normalized, apply_flip, apply_orientation,
     apply_pixel_crop, crop_to_source_rect, oriented_dimensions, oriented_to_source_pixel,
+};
+pub use masks::{
+    BoundedMaskCache, MASK_CACHE_MAX_ENTRIES, MaskRasterError, MaskRasterFrame,
+    rasterize_visible_masks, validate_masks_supported, visible_mask_count,
 };
 pub use rapidraw_edit_model::types::{CropRect, LinearRawMode, ToneMapper};
 pub use session::{

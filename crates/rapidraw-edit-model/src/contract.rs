@@ -70,7 +70,24 @@ export interface CropRect { x: number; y: number; width: number; height: number;
 export interface LensDistortionParams { k1: number; k2: number; k3: number; model: number; tca_vr: number; tca_vb: number; vig_k1: number; vig_k2: number; vig_k3: number; }
 export interface SectionVisibility { [section: string]: boolean; basic: boolean; curves: boolean; color: boolean; details: boolean; effects: boolean; }
 export interface MaskSectionVisibility { [section: string]: boolean; basic: boolean; curves: boolean; color: boolean; details: boolean; effects: boolean; }
-export interface SubMask { id: string; name: string | null; invert: boolean; visible: boolean; opacity: number; mode: SubMaskMode; type: string; parameters: unknown; }
+/**
+ * Typed geometry for the supported non-AI mask kinds. Positions are
+ * normalized fractions of the oriented full-frame size; lengths (brush
+ * diameter, radii, gradient range) are normalized fractions of the oriented
+ * frame width; rotation is degrees in [0, 360); feather is [0, 1]; flow is
+ * [0, 100]. Unsupported kinds (AI, luminance/color) have no typed geometry.
+ */
+export interface MaskPoint { x: number; y: number; }
+export type BrushTool = 'brush' | 'eraser';
+export interface BrushLine { tool: BrushTool; brushSize: number; feather: number; points: MaskPoint[]; }
+export interface FlowLine { tool: BrushTool; brushSize: number; feather: number; flow: number; points: MaskPoint[]; }
+export type MaskGeometry =
+  | { type: 'brush'; lines: BrushLine[] }
+  | { type: 'flow'; lines: FlowLine[] }
+  | { type: 'linear'; startX: number; startY: number; endX: number; endY: number; range: number }
+  | { type: 'radial'; centerX: number; centerY: number; radiusX: number; radiusY: number; rotation: number; feather: number }
+  | { type: 'all' };
+export interface SubMask { id: string; name: string | null; invert: boolean; visible: boolean; opacity: number; mode: SubMaskMode; type: string; parameters: unknown; geometry: MaskGeometry | null; }
 export interface MaskLocalAdjustments {
   exposure: number; brightness: number; contrast: number; highlights: number; shadows: number; whites: number; blacks: number;
   toneMapper: ToneMapper;

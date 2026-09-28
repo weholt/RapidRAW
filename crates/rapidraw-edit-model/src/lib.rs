@@ -19,6 +19,7 @@ pub mod canonical;
 pub mod contract;
 pub mod descriptors;
 pub mod geometry;
+pub mod masks;
 pub mod migrate;
 pub mod types;
 pub mod validate;
@@ -26,6 +27,9 @@ pub mod validate;
 pub use canonical::{canonical_bytes, sha256_hex};
 pub use descriptors::{PARAM_DESCRIPTORS, ParamDescriptor};
 pub use geometry::{LegacyPixelCrop, crop_to_legacy, crop_to_normalized};
+pub use masks::{
+    BrushLine, BrushTool, FlowLine, MaskGeometry, MaskPoint, SUPPORTED_KINDS, is_supported_kind,
+};
 pub use migrate::{
     EnvelopeIdentity, ImportReport, MigrationReport, RECIPE_KEYS, migrate_envelope, parse_envelope,
     recipe_from_legacy_adjustments, saturation_from_lap_legacy, saturation_to_lap_legacy,
