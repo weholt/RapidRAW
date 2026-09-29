@@ -58,6 +58,8 @@ export type LensCorrectionMode = 'auto' | 'manual';
 export type LensBlurShape = 'circle' | 'hexagon' | 'octagon' | 'ring';
 export type SubMaskMode = 'additive' | 'subtractive' | 'intersect';
 
+export type VignettingMethod = "ellipticOnCrop" | "circularOnCrop" | "circular";
+export interface Vignetting { enabled: boolean; amount: number; method: VignettingMethod; }
 export interface LevelsChannel { inputBlack: number; inputWhite: number; outputBlack: number; outputWhite: number; midtone: number; }
 export interface Levels { enabled: boolean; rgb: LevelsChannel; red: LevelsChannel; green: LevelsChannel; blue: LevelsChannel; }
 export interface CurvePoint { x: number; y: number; }
@@ -124,6 +126,7 @@ export interface Recipe {
   exposure: number; brightness: number; contrast: number; highlights: number; shadows: number; whites: number; blacks: number;
   toneMapper: ToneMapper;
   levels: Levels;
+  vignetting: Vignetting;
   curves: Curves; pointCurves: Curves; parametricCurve: ParametricCurve; curveMode: CurveMode;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;

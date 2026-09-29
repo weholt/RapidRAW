@@ -583,3 +583,102 @@ fn levels_individual_channels_and_existing_curves_compose_on_gpu() {
         "levels must precede, not replace, curves"
     );
 }
+
+#[test]
+fn vignetting_ev_geometry_crop_anchor_and_roi_on_gpu() {
+    let renderer = OffscreenRenderer::new(hw_context());
+    let base: image::DynamicImage =
+        ImageBuffer::from_pixel(160, 80, Rgba([128u8, 128, 128, 255])).into();
+    let render = |value| {
+        renderer
+            .render(&base, 33, request_from_json(value), OutputTarget::CpuPixels)
+            .unwrap()
+            .pixels
+    };
+    let at = |v: &[u8], x: usize, y: usize| v[(y * 160 + x) * 4];
+    let neutral = render(json!({"vignetteAmount":-20}));
+    assert_eq!(
+        neutral,
+        render(json!({"vignetteAmount":-20,"vignetting":{"amount":0}}))
+    );
+    let plain = render(json!({}));
+    let ellipse = render(json!({"vignetting":{"amount":-2,"method":"ellipticOnCrop"}}));
+    assert!(
+        at(&ellipse, 0, 40) + 30 < at(&plain, 0, 40),
+        "negative EV must darken edge"
+    );
+    assert_eq!(
+        at(&ellipse, 80, 40),
+        at(&plain, 80, 40),
+        "center stays unchanged"
+    );
+    assert!(
+        (at(&ellipse, 0, 40) as i32 - at(&ellipse, 80, 0) as i32).abs() <= 2,
+        "ellipse follows both dimensions"
+    );
+    let positive = render(json!({"vignetting":{"amount":2}}));
+    assert!(at(&positive, 0, 40) > at(&plain, 0, 40) + 30);
+    assert_eq!(
+        plain,
+        render(json!({"vignetting":{"enabled":false,"amount":-4}}))
+    );
+    let circle_value = json!({"vignetting":{"amount":-2,"method":"circular"}});
+    let circle = render(circle_value.clone());
+    assert!(
+        at(&circle, 80, 0) > at(&ellipse, 80, 0) + 20,
+        "circular geometry must differ on rectangular frame"
+    );
+    assert_eq!(
+        circle,
+        render(json!({"vignetting":{"amount":-2,"method":"circularOnCrop"}}))
+    );
+    let cropped: image::DynamicImage =
+        ImageBuffer::from_pixel(80, 40, Rgba([128u8, 128, 128, 255])).into();
+    let crop = json!({"x":0.25,"y":0.125,"width":0.5,"height":0.5});
+    let mut value = circle_value.clone();
+    value["crop"] = crop.clone();
+    let anchored = renderer
+        .render(
+            &cropped,
+            34,
+            request_from_json(value.clone()),
+            OutputTarget::CpuPixels,
+        )
+        .unwrap()
+        .pixels;
+    for y in 0..40 {
+        for x in 0..80 {
+            assert!(
+                (anchored[(y * 80 + x) * 4] as i32 - at(&circle, x + 40, y + 10) as i32).abs() <= 1,
+                "full-frame anchor at {x},{y}"
+            );
+        }
+    }
+    value["vignetting"]["method"] = json!("circularOnCrop");
+    let relative = renderer
+        .render(
+            &cropped,
+            34,
+            request_from_json(value),
+            OutputTarget::CpuPixels,
+        )
+        .unwrap()
+        .pixels;
+    assert_ne!(anchored, relative, "crop method recenters and rescales");
+    let mut request = request_from_json(circle_value);
+    request.roi = Some(rapidraw_develop::gpu::Roi {
+        x: 32,
+        y: 8,
+        width: 64,
+        height: 32,
+    });
+    let roi = renderer
+        .render(&base, 33, request, OutputTarget::CpuPixels)
+        .unwrap()
+        .pixels;
+    for y in 0..32 {
+        for x in 0..64 {
+            assert_eq!(roi[(y * 64 + x) * 4], at(&circle, x + 32, y + 8));
+        }
+    }
+}

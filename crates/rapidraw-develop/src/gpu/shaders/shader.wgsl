@@ -127,6 +127,8 @@ struct GlobalAdjustments {
     flare_amount: f32,
     sharpness_threshold: f32,
     levels: array<LevelsChannel, 4>,
+    vignetting: vec4<f32>,
+    vignetting_crop: vec4<f32>,
 }
 
 struct MaskAdjustments {
@@ -1850,6 +1852,26 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         } else {
             composite_rgb_linear = mix(composite_rgb_linear, vec3<f32>(1.0), v_amount * vignette_mask);
         }
+    }
+
+    // Input is the oriented, cropped image. Absolute pixel centers keep
+    // preview resolution, tiles and ROI from moving the vignette.
+    if (adjustments.global.vignetting.x != 0.0) {
+        let dims = vec2<f32>(textureDimensions(input_texture));
+        let pixel = vec2<f32>(absolute_coord) + vec2<f32>(0.5);
+        let method = adjustments.global.vignetting.y;
+        var radius: f32;
+        if (method < 0.5) {
+            radius = length((pixel / dims - 0.5) * 2.0);
+        } else if (method < 1.5) {
+            radius = length(pixel - dims * 0.5) * 2.0 / max(dims.x, dims.y);
+        } else {
+            let crop = adjustments.global.vignetting_crop;
+            let full_dims = dims / max(crop.zw, vec2<f32>(0.000001));
+            let full_pixel = pixel + crop.xy * full_dims;
+            radius = length(full_pixel - full_dims * 0.5) * 2.0 / max(full_dims.x, full_dims.y);
+        }
+        composite_rgb_linear *= exp2(adjustments.global.vignetting.x * smoothstep(0.25, 1.0, radius));
     }
 
     var default_tonemapped: vec3<f32>;

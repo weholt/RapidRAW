@@ -48,6 +48,11 @@ pub fn validate_recipe(recipe: &Recipe) -> Result<(), ModelError> {
         }
     }
 
+    if !recipe.vignetting.amount.is_finite() || !(-4.0..=4.0).contains(&recipe.vignetting.amount) {
+        return Err(ModelError::Validation(
+            "recipe.vignetting.amount must be finite and in [-4, 4]".into(),
+        ));
+    }
     validate_levels(&recipe.levels)?;
     validate_curves(&recipe.curves, "recipe.curves")?;
     validate_curves(&recipe.point_curves, "recipe.pointCurves")?;

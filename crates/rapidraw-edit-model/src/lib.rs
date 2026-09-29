@@ -40,7 +40,7 @@ pub use types::{
     LensDistortionParams, LensProfileRef, Levels, LevelsChannel, LinearRawMode, MaskContainer,
     MaskLocalAdjustments, MaskSectionVisibility, ParametricCurve, ParametricCurveSettings, Recipe,
     RecipeEnvelope, ResourceAlgorithm, ResourceRef, SectionId, SectionVisibility, SubMask,
-    SubMaskMode, ToneMapper,
+    SubMaskMode, ToneMapper, Vignetting, VignettingMethod,
 };
 pub use validate::validate_recipe;
 

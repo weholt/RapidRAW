@@ -668,6 +668,7 @@ pub struct Recipe {
     pub grain_amount: f64,
     pub grain_size: f64,
     pub grain_roughness: f64,
+    pub vignetting: Vignetting,
     pub vignette_amount: f64,
     pub vignette_midpoint: f64,
     pub vignette_roundness: f64,
@@ -765,6 +766,7 @@ impl Default for Recipe {
             grain_amount: 0.0,
             grain_size: 25.0,
             grain_roughness: 50.0,
+            vignetting: Vignetting::default(),
             vignette_amount: 0.0,
             vignette_midpoint: 50.0,
             vignette_roundness: 0.0,
@@ -922,5 +924,32 @@ impl RecipeEnvelope {
 impl Default for RecipeEnvelope {
     fn default() -> Self {
         Self::new(MODEL_VERSION, "asset", "primary", &"0".repeat(64))
+    }
+}
+
+/// Independent exposure vignette; legacy Effects vignette stays unchanged.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum VignettingMethod {
+    #[default]
+    EllipticOnCrop,
+    CircularOnCrop,
+    Circular,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Vignetting {
+    pub enabled: bool,
+    pub amount: f64,
+    pub method: VignettingMethod,
+}
+impl Default for Vignetting {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            amount: 0.0,
+            method: VignettingMethod::EllipticOnCrop,
+        }
     }
 }

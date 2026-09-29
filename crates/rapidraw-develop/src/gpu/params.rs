@@ -159,6 +159,8 @@ pub struct GlobalAdjustments {
     pub flare_amount: f32,
     pub sharpness_threshold: f32,
     pub levels: [GpuLevelsChannel; 4],
+    pub vignetting: [f32; 4],
+    pub vignetting_crop: [f32; 4],
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Pod, Zeroable, Default)]
@@ -653,6 +655,31 @@ pub fn get_global_adjustments_from_json(
     };
 
     GlobalAdjustments {
+        vignetting: [
+            if js_adjustments["vignetting"]["enabled"]
+                .as_bool()
+                .unwrap_or(true)
+            {
+                js_adjustments["vignetting"]["amount"]
+                    .as_f64()
+                    .unwrap_or(0.0) as f32
+            } else {
+                0.0
+            },
+            match js_adjustments["vignetting"]["method"].as_str() {
+                Some("circularOnCrop") => 1.0,
+                Some("circular") => 2.0,
+                _ => 0.0,
+            },
+            0.0,
+            0.0,
+        ],
+        vignetting_crop: [
+            js_adjustments["crop"]["x"].as_f64().unwrap_or(0.0) as f32,
+            js_adjustments["crop"]["y"].as_f64().unwrap_or(0.0) as f32,
+            js_adjustments["crop"]["width"].as_f64().unwrap_or(1.0) as f32,
+            js_adjustments["crop"]["height"].as_f64().unwrap_or(1.0) as f32,
+        ],
         levels: levels_from_json(&js_adjustments["levels"]),
         exposure: get_val("basic", "exposure", SCALES.exposure, None),
         brightness: get_val("basic", "brightness", SCALES.brightness, None),

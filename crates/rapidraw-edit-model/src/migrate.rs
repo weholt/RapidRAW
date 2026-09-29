@@ -34,6 +34,7 @@ pub const RECIPE_KEYS: &[&str] = &[
     "blacks",
     "toneMapper",
     "levels",
+    "vignetting",
     "curves",
     "pointCurves",
     "parametricCurve",
