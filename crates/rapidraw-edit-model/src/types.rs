@@ -572,6 +572,52 @@ impl Default for MaskContainer {
     }
 }
 
+/// Display-referred levels, independent from point/parametric curves.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct LevelsChannel {
+    pub input_black: f64,
+    pub input_white: f64,
+    pub output_black: f64,
+    pub output_white: f64,
+    /// Brightness offset [-1, 1], neutral 0. Positive moves midpoint left.
+    pub midtone: f64,
+}
+
+impl Default for LevelsChannel {
+    fn default() -> Self {
+        Self {
+            input_black: 0.0,
+            input_white: 255.0,
+            output_black: 0.0,
+            output_white: 255.0,
+            midtone: 0.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Levels {
+    pub enabled: bool,
+    pub rgb: LevelsChannel,
+    pub red: LevelsChannel,
+    pub green: LevelsChannel,
+    pub blue: LevelsChannel,
+}
+
+impl Default for Levels {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            rgb: LevelsChannel::default(),
+            red: LevelsChannel::default(),
+            green: LevelsChannel::default(),
+            blue: LevelsChannel::default(),
+        }
+    }
+}
+
 /// The semantic recipe: every persisted render parameter extracted from the
 /// legacy `INITIAL_ADJUSTMENTS` shape. UI-only legacy fields (`showClipping`,
 /// `aiPatches`) are excluded; unknown legacy fields are preserved at the
@@ -588,6 +634,7 @@ pub struct Recipe {
     pub whites: f64,
     pub blacks: f64,
     pub tone_mapper: ToneMapper,
+    pub levels: Levels,
     // Curves
     pub curves: Curves,
     pub point_curves: Curves,
@@ -688,6 +735,7 @@ impl Default for Recipe {
             whites: 0.0,
             blacks: 0.0,
             tone_mapper: ToneMapper::Basic,
+            levels: Levels::default(),
             curves: Curves::identity(),
             point_curves: Curves::identity(),
             parametric_curve: ParametricCurve::default(),

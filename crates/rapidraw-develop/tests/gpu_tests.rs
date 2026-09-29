@@ -505,3 +505,81 @@ fn bytemuck_layouts_round_trip() {
     assert_eq!(bytes.len(), std::mem::size_of::<AllAdjustments>());
     assert_eq!(bytes.len() % 16, 0, "uniform block stays 16-byte aligned");
 }
+
+#[test]
+fn levels_process_endpoints_midtones_channels_and_bypass_on_gpu() {
+    let renderer = OffscreenRenderer::new(hw_context());
+    let base: image::DynamicImage =
+        ImageBuffer::from_fn(256, 4, |x, _| Rgba([x as u8, x as u8, x as u8, 255])).into();
+    let render = |value| {
+        renderer
+            .render(&base, 1, request_from_json(value), OutputTarget::CpuPixels)
+            .unwrap()
+            .pixels
+    };
+    let neutral = render(json!({}));
+    let identity = render(json!({"levels":{"enabled":true}}));
+    assert_eq!(neutral, identity, "neutral levels must be bit-identical");
+    let lifted = render(
+        json!({"levels":{"rgb":{"inputBlack":20,"inputWhite":220,"outputBlack":15,"outputWhite":240}}}),
+    );
+    for (input, expected) in [(20, 15), (120, 128), (220, 240), (230, 251)] {
+        assert!(
+            (lifted[input * 4] as i32 - expected).abs() <= 2,
+            "input {input}: {} != {expected}",
+            lifted[input * 4]
+        );
+    }
+    let bypassed = render(json!({"levels":{"enabled":false,"rgb":{"outputBlack":50}}}));
+    assert_eq!(bypassed, neutral);
+    let red = render(json!({"levels":{"red":{"outputBlack":40,"outputWhite":220}}}));
+    assert!((red[128 * 4] as i32 - 130).abs() <= 2);
+    assert_eq!(red[128 * 4 + 1], neutral[128 * 4 + 1]);
+    assert_eq!(red[128 * 4 + 2], neutral[128 * 4 + 2]);
+    let bright = render(json!({"levels":{"rgb":{"midtone":0.5}}}));
+    let dark = render(json!({"levels":{"rgb":{"midtone":-0.5}}}));
+    assert!(bright[128 * 4] > neutral[128 * 4] + 20);
+    assert!(dark[128 * 4] + 20 < neutral[128 * 4]);
+    assert_eq!((bright[0], bright[255 * 4]), (0, 255));
+    let composed = render(
+        json!({"levels":{"rgb":{"outputBlack":20,"outputWhite":220},"red":{"outputBlack":30,"outputWhite":230}}}),
+    );
+    assert!((composed[128 * 4] as i32 - 124).abs() <= 2);
+    assert!((composed[128 * 4 + 1] as i32 - 120).abs() <= 2);
+}
+
+#[test]
+fn levels_individual_channels_and_existing_curves_compose_on_gpu() {
+    let renderer = OffscreenRenderer::new(hw_context());
+    let base: image::DynamicImage =
+        ImageBuffer::from_pixel(4, 4, Rgba([128u8, 128, 128, 255])).into();
+    for (channel, index) in [("red", 0), ("green", 1), ("blue", 2)] {
+        let mut recipe = json!({"levels":{}});
+        recipe["levels"][channel] = json!({"outputBlack":50,"outputWhite":240});
+        let output = renderer
+            .render(&base, 1, request_from_json(recipe), OutputTarget::CpuPixels)
+            .unwrap();
+        for c in 0..3 {
+            let expected = if c == index { 145 } else { 128 };
+            assert!(
+                (output.pixels[c] as i32 - expected).abs() <= 2,
+                "{channel}: channel {c}"
+            );
+        }
+    }
+    let output = renderer
+        .render(
+            &base,
+            1,
+            request_from_json(json!({
+                "levels":{"rgb":{"outputBlack":20,"outputWhite":220}},
+                "curves":{"luma":[{"x":0,"y":0},{"x":255,"y":127.5}]}
+            })),
+            OutputTarget::CpuPixels,
+        )
+        .unwrap();
+    assert!(
+        (output.pixels[0] as i32 - 60).abs() <= 2,
+        "levels must precede, not replace, curves"
+    );
+}

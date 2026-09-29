@@ -58,6 +58,8 @@ export type LensCorrectionMode = 'auto' | 'manual';
 export type LensBlurShape = 'circle' | 'hexagon' | 'octagon' | 'ring';
 export type SubMaskMode = 'additive' | 'subtractive' | 'intersect';
 
+export interface LevelsChannel { inputBlack: number; inputWhite: number; outputBlack: number; outputWhite: number; midtone: number; }
+export interface Levels { enabled: boolean; rgb: LevelsChannel; red: LevelsChannel; green: LevelsChannel; blue: LevelsChannel; }
 export interface CurvePoint { x: number; y: number; }
 export interface Curves { [channel: string]: CurvePoint[]; luma: CurvePoint[]; red: CurvePoint[]; green: CurvePoint[]; blue: CurvePoint[]; }
 export interface ParametricCurveSettings { darks: number; shadows: number; highlights: number; lights: number; whiteLevel: number; blackLevel: number; split1: number; split2: number; split3: number; }
@@ -121,6 +123,7 @@ const RECIPE_INTERFACE: &str = r#"/**
 export interface Recipe {
   exposure: number; brightness: number; contrast: number; highlights: number; shadows: number; whites: number; blacks: number;
   toneMapper: ToneMapper;
+  levels: Levels;
   curves: Curves; pointCurves: Curves; parametricCurve: ParametricCurve; curveMode: CurveMode;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;

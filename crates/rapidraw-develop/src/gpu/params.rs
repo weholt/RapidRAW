@@ -158,6 +158,7 @@ pub struct GlobalAdjustments {
     pub halation_amount: f32,
     pub flare_amount: f32,
     pub sharpness_threshold: f32,
+    pub levels: [GpuLevelsChannel; 4],
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Pod, Zeroable, Default)]
@@ -652,6 +653,7 @@ pub fn get_global_adjustments_from_json(
     };
 
     GlobalAdjustments {
+        levels: levels_from_json(&js_adjustments["levels"]),
         exposure: get_val("basic", "exposure", SCALES.exposure, None),
         brightness: get_val("basic", "brightness", SCALES.brightness, None),
         contrast: get_val("basic", "contrast", SCALES.contrast, None),
@@ -1002,4 +1004,38 @@ pub fn get_all_adjustments_from_json(
         tile_offset_y: 0,
         mask_atlas_cols: 1,
     }
+}
+
+/// Two 16-byte groups, mirrored by LevelsChannel in shader.wgsl.
+#[derive(Debug, Clone, Copy, Pod, Zeroable, Default, Serialize, Deserialize)]
+#[repr(C)]
+pub struct GpuLevelsChannel {
+    pub input_black: f32,
+    pub input_scale: f32,
+    pub output_black: f32,
+    pub output_scale: f32,
+    pub exponent: f32,
+    pub active: u32,
+    pub _pad1: f32,
+    pub _pad2: f32,
+}
+
+fn levels_from_json(value: &serde_json::Value) -> [GpuLevelsChannel; 4] {
+    let levels: rapidraw_edit_model::Levels =
+        serde_json::from_value(value.clone()).unwrap_or_default();
+    [levels.rgb, levels.red, levels.green, levels.blue].map(|channel| {
+        if !levels.enabled || channel == rapidraw_edit_model::LevelsChannel::default() {
+            return GpuLevelsChannel::default();
+        }
+        GpuLevelsChannel {
+            input_black: (channel.input_black / 255.0) as f32,
+            input_scale: (255.0 / (channel.input_white - channel.input_black).max(1.0)) as f32,
+            output_black: (channel.output_black / 255.0) as f32,
+            output_scale: ((channel.output_white - channel.output_black) / 255.0) as f32,
+            exponent: (0.5_f64.ln() / (0.5 - 0.45 * channel.midtone.clamp(-1.0, 1.0)).ln()) as f32,
+            active: 1,
+            _pad1: 0.0,
+            _pad2: 0.0,
+        }
+    })
 }

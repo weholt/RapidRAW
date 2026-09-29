@@ -30,6 +30,17 @@ struct ColorCalibrationSettings {
     _pad1: f32,
 }
 
+struct LevelsChannel {
+    input_black: f32,
+    input_scale: f32,
+    output_black: f32,
+    output_scale: f32,
+    exponent: f32,
+    is_active: u32,
+    _pad1: f32,
+    _pad2: f32,
+};
+
 struct GlobalAdjustments {
     exposure: f32,
     brightness: f32,
@@ -115,6 +126,7 @@ struct GlobalAdjustments {
     halation_amount: f32,
     flare_amount: f32,
     sharpness_threshold: f32,
+    levels: array<LevelsChannel, 4>,
 }
 
 struct MaskAdjustments {
@@ -1373,6 +1385,26 @@ fn is_default_curve(points: array<Point, 16>, count: u32) -> bool {
     return is_identity && p0_is_origin && p_last_is_end;
 }
 
+// Independent display-referred Levels. Extrapolate outside the input range:
+// output points map the selected inputs; they are not absolute clipping limits.
+fn apply_levels_channel(value: f32, levels: LevelsChannel) -> f32 {
+    if (levels.is_active == 0u) { return value; }
+    var t = (value - levels.input_black) * levels.input_scale;
+    if (t > 0.0 && t < 1.0 && levels.exponent != 1.0) {
+        t = pow(t, levels.exponent);
+    }
+    return levels.output_black + t * levels.output_scale;
+}
+
+fn apply_levels(color: vec3<f32>) -> vec3<f32> {
+    let master = adjustments.global.levels[0];
+    return vec3<f32>(
+        apply_levels_channel(apply_levels_channel(color.r, master), adjustments.global.levels[1]),
+        apply_levels_channel(apply_levels_channel(color.g, master), adjustments.global.levels[2]),
+        apply_levels_channel(apply_levels_channel(color.b, master), adjustments.global.levels[3])
+    );
+}
+
 fn apply_all_curves(color: vec3<f32>, luma_curve: array<Point, 16>, luma_curve_count: u32, red_curve: array<Point, 16>, red_curve_count: u32, green_curve: array<Point, 16>, green_curve_count: u32, blue_curve: array<Point, 16>, blue_curve_count: u32) -> vec3<f32> {
     let red_is_default = is_default_curve(red_curve, red_curve_count);
     let green_is_default = is_default_curve(green_curve, green_curve_count);
@@ -1844,7 +1876,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         base_srgb = default_tonemapped;
     }
 
-    var final_rgb = apply_all_curves(base_srgb,
+    var final_rgb = apply_all_curves(apply_levels(base_srgb),
         adjustments.global.luma_curve, adjustments.global.luma_curve_count,
         adjustments.global.red_curve, adjustments.global.red_curve_count,
         adjustments.global.green_curve, adjustments.global.green_curve_count,

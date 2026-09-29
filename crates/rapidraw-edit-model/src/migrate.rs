@@ -33,6 +33,7 @@ pub const RECIPE_KEYS: &[&str] = &[
     "whites",
     "blacks",
     "toneMapper",
+    "levels",
     "curves",
     "pointCurves",
     "parametricCurve",

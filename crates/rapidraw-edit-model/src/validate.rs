@@ -48,6 +48,7 @@ pub fn validate_recipe(recipe: &Recipe) -> Result<(), ModelError> {
         }
     }
 
+    validate_levels(&recipe.levels)?;
     validate_curves(&recipe.curves, "recipe.curves")?;
     validate_curves(&recipe.point_curves, "recipe.pointCurves")?;
     validate_parametric(&recipe.parametric_curve, "recipe.parametricCurve")?;
@@ -716,4 +717,35 @@ impl RecipeEnvelope {
         }
         Ok(())
     }
+}
+
+fn validate_levels(levels: &crate::Levels) -> Result<(), ModelError> {
+    for (name, channel) in [
+        ("rgb", &levels.rgb),
+        ("red", &levels.red),
+        ("green", &levels.green),
+        ("blue", &levels.blue),
+    ] {
+        for (key, value, min, max) in [
+            ("inputBlack", channel.input_black, 0.0, 255.0),
+            ("inputWhite", channel.input_white, 0.0, 255.0),
+            ("outputBlack", channel.output_black, 0.0, 255.0),
+            ("outputWhite", channel.output_white, 0.0, 255.0),
+            ("midtone", channel.midtone, -1.0, 1.0),
+        ] {
+            if !value.is_finite() || !(min..=max).contains(&value) {
+                return Err(ModelError::Validation(format!(
+                    "recipe.levels.{name}.{key} must be finite and in [{min}, {max}]"
+                )));
+            }
+        }
+        if channel.input_white - channel.input_black < 1.0
+            || channel.output_white - channel.output_black < 1.0
+        {
+            return Err(ModelError::Validation(format!(
+                "recipe.levels.{name}: white must exceed black by at least 1"
+            )));
+        }
+    }
+    Ok(())
 }

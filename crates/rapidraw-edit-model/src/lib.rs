@@ -37,9 +37,10 @@ pub use migrate::{
 pub use types::{
     ColorCalibration, ColorGrading, CropRect, CurveMode, CurvePoint, Curves,
     EffectiveDecodeSettings, Hsl, HueSatLum, LensBlurShape, LensCorrectionMode,
-    LensDistortionParams, LensProfileRef, LinearRawMode, MaskContainer, MaskLocalAdjustments,
-    MaskSectionVisibility, ParametricCurve, ParametricCurveSettings, Recipe, RecipeEnvelope,
-    ResourceAlgorithm, ResourceRef, SectionId, SectionVisibility, SubMask, SubMaskMode, ToneMapper,
+    LensDistortionParams, LensProfileRef, Levels, LevelsChannel, LinearRawMode, MaskContainer,
+    MaskLocalAdjustments, MaskSectionVisibility, ParametricCurve, ParametricCurveSettings, Recipe,
+    RecipeEnvelope, ResourceAlgorithm, ResourceRef, SectionId, SectionVisibility, SubMask,
+    SubMaskMode, ToneMapper,
 };
 pub use validate::validate_recipe;
 
