@@ -99,7 +99,6 @@ export interface MaskLocalAdjustments {
   toneMapper: ToneMapper;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;
-  blackWhiteEnabled: boolean; blackWhiteMix: [number, number, number, number, number, number, number, number];
   clarity: number; structure: number; dehaze: number; "centré": number;
   sharpness: number; sharpnessThreshold: number; lumaNoiseReduction: number; colorNoiseReduction: number;
   chromaticAberrationRedCyan: number; chromaticAberrationBlueYellow: number;
@@ -131,6 +130,7 @@ export interface Recipe {
   curves: Curves; pointCurves: Curves; parametricCurve: ParametricCurve; curveMode: CurveMode;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;
+  blackWhiteEnabled: boolean; blackWhiteMix: [number, number, number, number, number, number, number, number];
   clarity: number; structure: number; dehaze: number; "centré": number;
   sharpness: number; sharpnessThreshold: number; lumaNoiseReduction: number; colorNoiseReduction: number;
   chromaticAberrationRedCyan: number; chromaticAberrationBlueYellow: number;
@@ -202,6 +202,28 @@ mod tests {
     use super::*;
     use std::fs;
     use std::path::Path;
+
+    #[test]
+    fn black_white_fields_are_on_recipe_not_mask_local_adjustments() {
+        let contract = generate_typescript();
+        let mask = contract
+            .split("export interface MaskLocalAdjustments {")
+            .nth(1)
+            .unwrap()
+            .split('}')
+            .next()
+            .unwrap();
+        let recipe = contract
+            .split("export interface Recipe {")
+            .nth(1)
+            .unwrap()
+            .split('}')
+            .next()
+            .unwrap();
+        assert!(!mask.contains("blackWhiteEnabled"));
+        assert!(recipe.contains("blackWhiteEnabled"));
+        assert!(recipe.contains("blackWhiteMix"));
+    }
 
     /// Regenerate the committed contract files. Run explicitly:
     /// `cargo test --manifest-path crates/rapidraw-edit-model/Cargo.toml -- --ignored update_generated_files`
