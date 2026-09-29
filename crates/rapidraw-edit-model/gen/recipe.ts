@@ -57,6 +57,7 @@ export interface MaskLocalAdjustments {
   toneMapper: ToneMapper;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;
+  blackWhiteEnabled: boolean; blackWhiteMix: [number, number, number, number, number, number, number, number];
   clarity: number; structure: number; dehaze: number; "centré": number;
   sharpness: number; sharpnessThreshold: number; lumaNoiseReduction: number; colorNoiseReduction: number;
   chromaticAberrationRedCyan: number; chromaticAberrationBlueYellow: number;
@@ -362,6 +363,17 @@ export const DEFAULT_RECIPE: Recipe = {
     "blueHue": 0.0,
     "blueSaturation": 0.0
   },
+  "blackWhiteEnabled": false,
+  "blackWhiteMix": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
   "clarity": 0.0,
   "structure": 0.0,
   "dehaze": 0.0,

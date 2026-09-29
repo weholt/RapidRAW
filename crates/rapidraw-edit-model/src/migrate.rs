@@ -47,6 +47,8 @@ pub const RECIPE_KEYS: &[&str] = &[
     "colorGrading",
     "hsl",
     "colorCalibration",
+    "blackWhiteEnabled",
+    "blackWhiteMix",
     "clarity",
     "structure",
     "dehaze",

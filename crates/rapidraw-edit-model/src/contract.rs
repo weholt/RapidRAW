@@ -99,6 +99,7 @@ export interface MaskLocalAdjustments {
   toneMapper: ToneMapper;
   temperature: number; tint: number; vibrance: number; saturation: number; hue: number;
   colorGrading: ColorGrading; hsl: Hsl; colorCalibration: ColorCalibration;
+  blackWhiteEnabled: boolean; blackWhiteMix: [number, number, number, number, number, number, number, number];
   clarity: number; structure: number; dehaze: number; "centré": number;
   sharpness: number; sharpnessThreshold: number; lumaNoiseReduction: number; colorNoiseReduction: number;
   chromaticAberrationRedCyan: number; chromaticAberrationBlueYellow: number;

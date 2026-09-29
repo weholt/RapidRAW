@@ -161,6 +161,10 @@ pub struct GlobalAdjustments {
     pub levels: [GpuLevelsChannel; 4],
     pub vignetting: [f32; 4],
     pub vignetting_crop: [f32; 4],
+    pub black_white_enabled: u32,
+    pub _pad_bw: [f32; 3],
+    pub black_white_mix0: [f32; 4],
+    pub black_white_mix1: [f32; 4],
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Pod, Zeroable, Default)]
@@ -680,6 +684,24 @@ pub fn get_global_adjustments_from_json(
             js_adjustments["crop"]["width"].as_f64().unwrap_or(1.0) as f32,
             js_adjustments["crop"]["height"].as_f64().unwrap_or(1.0) as f32,
         ],
+        black_white_enabled: u32::from(
+            js_adjustments["blackWhiteEnabled"]
+                .as_bool()
+                .unwrap_or(false),
+        ),
+        _pad_bw: [0.0; 3],
+        black_white_mix0: std::array::from_fn(|index| {
+            js_adjustments["blackWhiteMix"][index]
+                .as_f64()
+                .unwrap_or(0.0) as f32
+                / 100.0
+        }),
+        black_white_mix1: std::array::from_fn(|index| {
+            js_adjustments["blackWhiteMix"][index + 4]
+                .as_f64()
+                .unwrap_or(0.0) as f32
+                / 100.0
+        }),
         levels: levels_from_json(&js_adjustments["levels"]),
         exposure: get_val("basic", "exposure", SCALES.exposure, None),
         brightness: get_val("basic", "brightness", SCALES.brightness, None),

@@ -649,6 +649,10 @@ pub struct Recipe {
     pub color_grading: ColorGrading,
     pub hsl: Hsl,
     pub color_calibration: ColorCalibration,
+    /// Independent monochrome conversion; color adjustments remain intact.
+    pub black_white_enabled: bool,
+    /// Red, orange, yellow, green, aqua, blue, purple and magenta mixes.
+    pub black_white_mix: [f64; 8],
     // Details
     pub clarity: f64,
     pub structure: f64,
@@ -750,6 +754,8 @@ impl Default for Recipe {
             color_grading: ColorGrading::default(),
             hsl: Hsl::default(),
             color_calibration: ColorCalibration::default(),
+            black_white_enabled: false,
+            black_white_mix: [0.0; 8],
             clarity: 0.0,
             structure: 0.0,
             dehaze: 0.0,

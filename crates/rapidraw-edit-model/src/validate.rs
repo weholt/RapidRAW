@@ -60,6 +60,14 @@ pub fn validate_recipe(recipe: &Recipe) -> Result<(), ModelError> {
     validate_color_grading(&recipe.color_grading, "recipe.colorGrading")?;
     validate_hsl(&recipe.hsl, "recipe.hsl")?;
     validate_color_calibration(&recipe.color_calibration, "recipe.colorCalibration")?;
+    for (index, value) in recipe.black_white_mix.iter().enumerate() {
+        check_num(
+            *value,
+            &format!("recipe.blackWhiteMix[{index}]"),
+            -100.0,
+            100.0,
+        )?;
+    }
 
     check_opt_string(recipe.lut_name.as_deref(), "recipe.lutName", 200)?;
     check_opt_string(recipe.lut_path.as_deref(), "recipe.lutPath", 1024)?;

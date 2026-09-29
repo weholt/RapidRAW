@@ -210,6 +210,39 @@ fn color_and_detail_scaling_matches_host_semantics() {
     assert_eq!(agx.global.tonemapper_mode, 1, "agx tone mapper is mode 1");
 }
 
+#[test]
+fn black_white_conversion_is_neutral_when_off_and_mixes_hue_when_on() {
+    let neutral = get_all_adjustments_from_json(&json!({}), false, None);
+    assert_eq!(neutral.global.black_white_enabled, 0);
+    let mixed = get_all_adjustments_from_json(
+        &json!({"blackWhiteEnabled": true, "blackWhiteMix": [80, 0, 0, 0, 0, 0, 0, 0]}),
+        false,
+        None,
+    );
+    assert_eq!(mixed.global.black_white_enabled, 1);
+    assert_eq!(mixed.global.black_white_mix0[0], 0.8);
+
+    let renderer = OffscreenRenderer::new(hw_context());
+    let source = ImageBuffer::from_pixel(24, 24, Rgba([220u8, 40, 35, 255]));
+    let render = |recipe| {
+        renderer
+            .render(
+                &source.clone().into(),
+                1,
+                request_from_json(recipe),
+                OutputTarget::CpuPixels,
+            )
+            .unwrap()
+            .pixels
+    };
+    let mono = render(json!({"blackWhiteEnabled": true}));
+    let boosted =
+        render(json!({"blackWhiteEnabled": true, "blackWhiteMix": [80, 0, 0, 0, 0, 0, 0, 0]}));
+    assert!((mono[0] as i32 - mono[1] as i32).abs() <= 1);
+    assert!((mono[1] as i32 - mono[2] as i32).abs() <= 1);
+    assert!(boosted[0] > mono[0]);
+}
+
 fn mask_entry(visible: bool, adjustments: serde_json::Value) -> serde_json::Value {
     json!({
         "id": "m", "name": "m", "visible": visible, "invert": false,
