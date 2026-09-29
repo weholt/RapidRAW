@@ -264,7 +264,22 @@ fn validate_color_grading(grading: &ColorGrading, path: &str) -> Result<(), Mode
             "highlights" => &grading.highlights,
             _ => unreachable!(),
         };
-        validate_hsl_component(value, &format!("{path}.{zone}"))?;
+        // Grading chooses an absolute hue in degrees; HSL channel edits are
+        // signed offsets instead. Retain the previously accepted negative
+        // range so existing recipes keep their exact rendered appearance.
+        check_num(value.hue, &format!("{path}.{zone}.hue"), -100.0, 360.0)?;
+        check_num(
+            value.saturation,
+            &format!("{path}.{zone}.saturation"),
+            -100.0,
+            100.0,
+        )?;
+        check_num(
+            value.luminance,
+            &format!("{path}.{zone}.luminance"),
+            -100.0,
+            100.0,
+        )?;
     }
     Ok(())
 }
