@@ -46,6 +46,8 @@ dependencies = [
  "pollster",
  "quick-xml 0.41.0",
  "rand 0.10.2",
+ "rapidraw-develop",
+ "rapidraw-edit-model",
  "rawler",
  "rayon",
  "regex",
@@ -74,6 +76,7 @@ dependencies = [
  "webkit2gtk-nvidia-quirk",
  "webp",
  "wgpu",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5150,6 +5153,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca45419789ae5a7899559e9512e58ca889e41f04f1f2445e9f4b290ceccd1d08"
 
 [[package]]
+name = "rapidraw-develop"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "fuzzy-matcher",
+ "glam 0.33.5",
+ "half",
+ "image",
+ "log",
+ "pollster",
+ "quick-xml 0.41.0",
+ "rapidraw-edit-model",
+ "rawler",
+ "rayon",
+ "serde",
+ "serde_json",
+ "wgpu",
+]
+
+[[package]]
+name = "rapidraw-edit-model"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+]
+
+[[package]]
 name = "rav1e"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5229,7 +5262,7 @@ dependencies = [
 [[package]]
 name = "rawler"
 version = "0.7.1"
-source = "git+https://github.com/CyberTimon/RapidRAW-DngLab.git#3289454e9a65f5c973594687cca35602fa8181e3"
+source = "git+https://github.com/CyberTimon/RapidRAW-DngLab.git?rev=3289454e9a65f5c973594687cca35602fa8181e3#3289454e9a65f5c973594687cca35602fa8181e3"
 dependencies = [
  "backtrace",
  "bitstream-io",

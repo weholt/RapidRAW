@@ -17,6 +17,9 @@
       "toneMapper": "Tone Mapper",
       "whites": "Whites"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "Select {{name}} color",
       "calibration": {
@@ -66,13 +69,13 @@
       "whiteBalance": "White Balance"
     },
     "curves": {
-      "channelTitle": "{{channel}} Channel",
       "channels": {
         "blue": "Blue",
         "green": "Green",
         "luma": "Luma",
         "red": "Red"
       },
+      "channelTitle": "{{channel}} Channel",
       "copyParametric": "Copy {{channel}} Parametric Curve",
       "copyPoint": "Copy {{channel}} Point Curve",
       "curveDataUnavailable": "Curve data not available.",
@@ -131,6 +134,32 @@
       "roundness": "Roundness",
       "size": "Size",
       "vignette": "Vignette"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -299,10 +328,14 @@
       },
       "sections": {
         "basic": "Basic",
+        "blackWhite": "Black & White",
         "color": "Color",
+        "colorBalance": "Color Balance",
         "curves": "Curves",
         "details": "Details",
-        "effects": "Effects"
+        "effects": "Effects",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "Adjustments",
       "tooltips": {
@@ -400,7 +433,9 @@
         "quickErase": "Quick Erase {{count}}",
         "quickErase_one": "Quick Erase {{count}}",
         "quickErase_other": "Quick Erase {{count}}",
-        "retouch": "Retouch {{count}}"
+        "retouch": "Retouch {{count}}",
+        "retouch_one": "Retouch {{count}}",
+        "retouch_other": "Retouch {{count}}"
       },
       "resetInpaintingTooltip": "Reset Inpainting",
       "settings": {
@@ -673,8 +708,8 @@
       "organization": {
         "addTagPlaceholder": "Add tag...",
         "colorLabel": "Color Label",
-        "noTags": "No tags",
         "none": "None",
+        "noTags": "No tags",
         "rating": "Rating",
         "ratingLabels": "Rating & Labels",
         "tags": "Tags",
@@ -793,6 +828,18 @@
       "removeGps": "Remove GPS Data",
       "saveWithMetadata": "Save with Metadata"
     },
+    "phase": {
+      "cancelling": "Cancelling workflows…",
+      "discovering": "Discovering workflows…",
+      "postBatch": "Running batch workflow",
+      "postImage": "Running workflow",
+      "rendering": "Rendering image",
+      "timeout": "{{seconds}}s timeout",
+      "waiting": "Waiting for a workflow slot…",
+      "warnings_one": "{{count}} warning",
+      "warnings_other": "{{count}} warnings",
+      "writing": "Writing image"
+    },
     "resize": {
       "dontEnlarge": "Don't Enlarge",
       "modes": {
@@ -803,6 +850,24 @@
       },
       "pixels": "pixels",
       "resizeToFit": "Resize to Fit"
+    },
+    "result": {
+      "cancelled": "Export cancelled",
+      "dismiss": "Dismiss",
+      "imageErrors": "Failed images",
+      "statusCancelled": "cancelled",
+      "statusFailed": "failed",
+      "statusSucceeded": "succeeded",
+      "statusTimedOut": "timed out",
+      "statusWarned": "warnings",
+      "stderr": "Workflow output",
+      "summary": "{{succeeded}} of {{total}} exported",
+      "warningPrefix": "Warning",
+      "workflowFailures_one": "{{selected}} workflow run failed",
+      "workflowFailures_other": "{{selected}} workflow runs failed",
+      "workflowRuns": "Workflow runs",
+      "workflowWarnings_one": "{{selected}} workflow warning",
+      "workflowWarnings_other": "{{selected}} workflow warnings"
     },
     "sections": {
       "advanced": "Advanced",
@@ -820,12 +885,12 @@
       "estimatedSize": "Estimated file size: ~{{size}}",
       "estimatedTotalSize": "Estimated total size: ~{{size}}",
       "estimatingSize": "Estimating size...",
+      "exporting": "Exporting…",
+      "exportingProgress": "Exporting… ({{current}}/{{total}})",
       "exportMultiple": "Export {{count}} {{label}}",
       "exportMultiple_one": "Export {{count}} {{label}}",
       "exportMultiple_other": "Export {{count}} {{label}}",
       "exportSingle": "Export {{label}}",
-      "exporting": "Exporting…",
-      "exportingProgress": "Exporting… ({{current}}/{{total}})",
       "failed": "Export failed",
       "noImageSelected": "No image selected for export.",
       "noImagesSelected": "No images selected.",
@@ -851,6 +916,38 @@
       "scale": "Scale",
       "spacing": "Spacing",
       "watermarkImage": "Watermark Image"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "I understand, run workflows",
+        "decline": "Cancel export",
+        "discoveryLocations": "Workflows are discovered from the bundled examples and your ~/.rapidraw/workflows folder. Review or remove installed workflows there at any time.",
+        "fullPermissions": "Workflows run as programs with your full user permissions: they can read, modify, and delete any file you can access, and they can reach the network.",
+        "intro": "This export will run {{selected}} workflow(s) on your computer. Please confirm before the first workflow execution:",
+        "noSandbox": "RapidRAW does not sandbox workflows. Timeouts and output limits bound a run, but they do not restrict what a workflow may do to your files.",
+        "onlyTrustedSources": "Only run workflows from sources you trust. Never install a workflow from someone you do not know.",
+        "title": "Run local export workflows?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
@@ -884,8 +981,8 @@
       "iso": "ISO",
       "metadata": "Metadata",
       "noMetadataAvailable": "No metadata available",
-      "noTagsAdded": "No tags added",
       "none": "None",
+      "noTagsAdded": "No tags added",
       "rateAndLabel": "Rate & Label",
       "rating": "Rating",
       "selectImagesToCompare": "Select images to compare",
@@ -973,6 +1070,14 @@
       },
       "title": "Library",
       "viewOptions": {
+        "captureSessions": "Capture Sessions",
+        "captureSessionsEnable": "Group by capture time",
+        "captureSessionsGap": "Maximum adjacent gap",
+        "captureSessionsMinutes_one": "1 minute",
+        "captureSessionsMinutes_other": "{{count}} minutes",
+        "captureSessionsSeconds_one": "1 second",
+        "captureSessionsSeconds_other": "{{count}} seconds",
+        "captureSessionsSliderLabel": "Capture session gap: {{gap}}",
         "currentFolder": "Current Folder",
         "displayMode": "Display Mode",
         "exifDisabledTooltip": "Enable EXIF Reading in Settings to use this option.",
@@ -1006,6 +1111,11 @@
       "progress": "Importing... ({{current}}/{{total}})"
     },
     "items": {
+      "captureSessionFallback_one": "1 image uses its file modified time",
+      "captureSessionFallback_other": "{{count}} images use their file modified time",
+      "captureSessionLabel": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_one": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_other": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
       "cloudPlaceholder": "Stored in iCloud — not downloaded",
       "collapseFolder": "Collapse Folder",
       "currentFolder": "Current Folder",
@@ -1075,6 +1185,11 @@
       "communityPresets": "Community Presets",
       "goHome": "Go to Home",
       "importImages": "Import Images"
+    },
+    "viewMode": {
+      "culling": "Culling View",
+      "grid": "Grid View",
+      "list": "List View"
     }
   },
   "masks": {
@@ -1202,9 +1317,9 @@
       "applyButton_one": "Apply to 1 image",
       "applyButton_other": "Apply to {{count}} images",
       "bestImage": "Best Image",
+      "blurryImagesTab": "Blurry Images",
       "blurThreshold": "Blur Threshold",
       "blurThresholdDesc": "Images with a sharpness score below this value are flagged. Higher is stricter.",
-      "blurryImagesTab": "Blurry Images",
       "cancel": "Cancel",
       "close": "Close",
       "cullingFailed": "Culling Failed",
@@ -1292,17 +1407,58 @@
       "title": "Merge to HDR"
     },
     "importSettings": {
+      "addLiteral": "Add text",
+      "addToken": "Add {{token}}",
+      "androidCopyOnly": "Android imports copy files with their original names. Move is unavailable.",
+      "block": "Block",
+      "buildingPreview": "Building authoritative preview…",
       "cancel": "Cancel",
-      "dateFormat": "Date Format",
-      "dateFormatPlaceholder": "e.g., YYYY/MM-DD",
-      "deleteAfterImport": "Delete originals after successful import",
-      "deleteWarning": "Files will be moved to the system trash.",
-      "fileNaming": "File Naming",
-      "folderOrganization": "Folder Organization",
-      "organizeByDate": "Organize into subfolders by date",
-      "sourceFiles": "Source Files",
+      "chooseSourceFolder": "Choose source folder",
+      "collisionPolicy": "Existing files",
+      "copy": "Copy",
+      "copyResult": "Copy result details",
+      "deletePreset": "Delete",
+      "destination": "Destination",
+      "empty": "Use empty value",
+      "emptyPattern": "No folder pattern",
+      "fallback": "Fallback",
+      "fallbackValue": "Fallback value",
+      "filenamePattern": "Filename pattern",
+      "folderPattern": "Folder pattern",
+      "includeSidecars": "Include RapidRAW and XMP sidecars",
+      "literalValue": "Text value",
+      "metadataTokens": "Metadata tokens",
+      "missingTokenPolicy": "Missing metadata",
+      "move": "Move after verified copy",
+      "moveLeft": "Move block left",
+      "moveRight": "Move block right",
+      "next": "Next",
+      "operation": "Operation",
+      "patternText": "Pattern text",
+      "preserveTimestamps": "Preserve source timestamps",
+      "preset": "Import preset",
+      "presetName": "Preset name",
+      "preview": "Import preview",
+      "previewCount": "{{count}} supported files; {{unsupported}} unsupported",
+      "previewCount_one": "{{count}} supported file; {{unsupported}} unsupported",
+      "previewCount_other": "{{count}} supported files; {{unsupported}} unsupported",
+      "previewPrompt": "Choose sources and patterns to preview every destination.",
+      "previous": "Previous",
+      "progressPhase": "Import phase: {{phase}}",
+      "recursive": "Include subfolders",
+      "removeBlock": "Remove block",
+      "renamePreset": "Rename",
+      "renameWithSuffix": "Rename with suffix",
+      "resolvePreviewErrors": "Resolve blocking preview errors first",
+      "resultSummary": "{{succeeded}} succeeded, {{failed}} failed, {{retained}} sources retained",
+      "savePreset": "Save preset",
+      "selectFolder": "Select source folder",
+      "skip": "Skip",
+      "source": "Source",
       "startImport": "Start Import",
-      "title": "Import Settings"
+      "status": "Status",
+      "title": "Import Settings",
+      "useCaptureTime": "Set timestamp from capture time"
     },
     "lensCorrection": {
       "amount": "Amount",
@@ -1763,8 +1919,8 @@
     "tagging": {
       "addCustomPlaceholder": "Add custom AI tags (comma separated)...",
       "addCustomTooltip": "Add AI tag",
-      "addShortcutTooltip": "Add Shortcut",
       "addShortcutsPlaceholder": "Add shortcuts (comma separated)...",
+      "addShortcutTooltip": "Add Shortcut",
       "aiTagging": "AI Tagging",
       "aiTaggingDesc": "Enables automatic image tagging using an AI (CLIP) model. This will download an additional model and impact performance while browsing folders. Tags are used for searching a folder.",
       "amount": "Amount",

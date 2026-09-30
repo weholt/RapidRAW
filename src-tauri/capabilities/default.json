@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for the main window. The shell plugin is scoped to open-only: shell:default grants exactly allow-open for http(s)/tel/mailto URLs (release and account links in the library and settings panels). Process execution through the shell plugin is explicitly denied; export workflows run through the Rust runner in src-tauri/src/export_workflows.rs, never through frontend process permissions.",
   "windows": ["main"],
   "permissions": [
     "core:default",
@@ -15,6 +15,10 @@
     "os:allow-os-type",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-decorations",
-    "shell:default"
+    "shell:default",
+    "shell:deny-execute",
+    "shell:deny-spawn",
+    "shell:deny-kill",
+    "shell:deny-stdin-write"
   ]
 }

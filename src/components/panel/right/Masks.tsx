@@ -20,7 +20,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import Text from '../../ui/Text';
 import { TextWeights } from '../../../types/typography';
-import i18n from 'i18next';
+import i18n, { type ParseKeys } from 'i18next';
 
 export enum Mask {
   AiDepth = 'ai-depth',
@@ -261,7 +261,7 @@ export const AI_SUB_MASK_COMPONENT_TYPES: Array<MaskType> = [
   ...AI_GENERATIVE_CREATION_TYPES,
 ];
 
-export function NewMaskDropZone({ isOver, textKey }: { isOver: boolean; textKey: string }) {
+export function NewMaskDropZone({ isOver, textKey }: { isOver: boolean; textKey: ParseKeys }) {
   const { t } = useTranslation();
   return (
     <motion.div

@@ -18,6 +18,7 @@ mod culling;
 mod denoising;
 mod exif_processing;
 mod export_processing;
+pub mod export_workflows;
 mod file_management;
 mod focus_stacking;
 mod formats;
@@ -25,18 +26,18 @@ mod gpu_processing;
 mod hdr_deghosting;
 mod image_loader;
 mod image_processing;
+pub mod import_processing;
 mod inpainting;
 mod launch_request;
 mod lens_blur;
 mod lens_correction;
 mod lut_processing;
 mod mask_generation;
-mod multi_exposure;
 mod negative_conversion;
 mod panorama_stitching;
 mod panorama_utils;
 mod preset_converter;
-mod raw_processing;
+pub mod raw_processing;
 mod tagging;
 mod tagging_utils;
 mod window_customizer;
@@ -380,7 +381,9 @@ fn process_preview_job(
             cached.unscaled_crop_offset,
         )
     } else {
-        *state.gpu_image_cache.lock().unwrap() = None;
+        if let Some(renderer) = state.gpu_renderer.lock().unwrap().as_ref() {
+            renderer.clear_image_cache();
+        }
 
         let (base, scale, offset) =
             generate_transformed_preview(&state, &loaded_image, &adjustments_clone, preview_dim)?;
@@ -409,8 +412,11 @@ fn process_preview_job(
             Arc::clone(&final_preview_base)
         };
 
-        if is_interactive && base_valid {
-            *state.gpu_image_cache.lock().unwrap() = None;
+        if is_interactive
+            && base_valid
+            && let Some(renderer) = state.gpu_renderer.lock().unwrap().as_ref()
+        {
+            renderer.clear_image_cache();
         }
 
         small
@@ -1855,7 +1861,10 @@ pub fn run() {
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let launch_req = parse_launch_args(&args);
-    let is_headless = matches!(launch_req, LaunchRequest::HeadlessExport(_));
+    let is_headless = matches!(
+        launch_req,
+        LaunchRequest::HeadlessExport(_) | LaunchRequest::ListWorkflows
+    );
 
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
@@ -2033,22 +2042,38 @@ pub fn run() {
                 }
             }
 
-            if let LaunchRequest::HeadlessExport(session) = launch_req {
-                let app_handle_clone = app_handle.clone();
-                tauri::async_runtime::spawn(async move {
-                    match crate::export_processing::run_headless_export(session, app_handle_clone.clone()).await {
-                        Ok(_) => {
-                            println!("Headless export completed successfully.");
-                            app_handle_clone.exit(0);
+            match launch_req {
+                LaunchRequest::HeadlessExport(session) => {
+                    let app_handle_clone = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let result = crate::export_processing::run_headless_export(
+                            session,
+                            app_handle_clone.clone(),
+                        )
+                        .await;
+                        match &result {
+                            Ok(()) => println!("Headless export completed successfully."),
+                            Err(e) => eprintln!("Headless export failed: {}", e),
                         }
-                        Err(e) => {
-                            eprintln!("Headless export failed: {}", e);
-                            app_handle_clone.exit(1);
-                        }
-                    }
-                });
+                        app_handle_clone.exit(headless_exit_code(&result));
+                    });
 
-                return Ok(());
+                    return Ok(());
+                }
+                LaunchRequest::ListWorkflows => {
+                    // Registry query only: fresh discovery scan, deterministic
+                    // listing on stdout, exit 0. Never opens a window.
+                    let app_handle_clone = app_handle.clone();
+                    tauri::async_runtime::spawn_blocking(move || {
+                        let listing =
+                            export_workflows::headless_workflow_listing(&app_handle_clone);
+                        print!("{listing}");
+                        app_handle_clone.exit(0);
+                    });
+
+                    return Ok(());
+                }
+                _ => {}
             }
 
             start_preview_worker(app_handle.clone());
@@ -2223,8 +2248,7 @@ pub fn run() {
             original_image: Mutex::new(None),
             cached_preview: Mutex::new(None),
             gpu_context: Mutex::new(None),
-            gpu_image_cache: Mutex::new(None),
-            gpu_processor: Mutex::new(None),
+            gpu_renderer: Mutex::new(None),
             ai_state: Mutex::new(None),
             ai_init_lock: TokioMutex::new(()),
             export_task_token: Arc::new(Mutex::new(None)),
@@ -2254,6 +2278,9 @@ pub fn run() {
             disks_cache: Mutex::new(None),
             disks_cache_refreshing: AtomicBool::new(false),
             camera_session: Mutex::new(camera_tethering::CameraSession::new()),
+            workflow_discovery_cache: Mutex::new(None),
+            workflow_concurrency_gate: export_workflows::WorkflowConcurrencyGate::default(),
+            workflow_run_id: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             apply_adjustments,
@@ -2284,6 +2311,11 @@ pub fn run() {
             app_settings::load_settings,
             app_settings::save_settings,
             app_settings::is_tethering_supported,
+            import_processing::create_import_plan,
+            import_processing::get_import_preview_page,
+            import_processing::execute_import_plan,
+            import_processing::cancel_import,
+            import_processing::import_android_content_files,
             ai_commands::generate_ai_subject_mask,
             ai_commands::precompute_ai_subject_mask,
             ai_commands::generate_ai_foreground_mask,
@@ -2308,6 +2340,8 @@ pub fn run() {
             export_processing::export_images,
             export_processing::cancel_export,
             export_processing::estimate_export_sizes,
+            export_workflows::discover_export_workflows,
+            export_workflows::refresh_export_workflows,
             image_processing::calculate_auto_adjustments,
             mask_generation::generate_mask_overlay,
             file_management::update_exif_fields,
@@ -2346,7 +2380,6 @@ pub fn run() {
             file_management::clear_thumbnail_cache,
             file_management::set_color_label_for_paths,
             file_management::set_rating_for_paths,
-            file_management::import_files,
             file_management::create_virtual_copy,
             file_management::get_albums,
             file_management::save_albums,
@@ -2387,7 +2420,19 @@ pub fn run() {
                         log::info!("macOS initial open: Stored path {} for later.", path_str);
                     }
                 }
-                tauri::RunEvent::ExitRequested { api, .. } => {
+                tauri::RunEvent::ExitRequested { code, api, .. } => {
+                    // Explicit exit requests carry their own exit code — the
+                    // headless export/listing commands depend on it for their
+                    // documented non-zero failure status. Everything else
+                    // (last window closed, restart requests) keeps the
+                    // existing force-quit behavior below.
+                    if let Some(code) = code.filter(|code| *code != tauri::RESTART_EXIT_CODE) {
+                        #[cfg(target_os = "macos")]
+                        unsafe { libc::_exit(code); }
+
+                        #[cfg(not(target_os = "macos"))]
+                        std::process::exit(code);
+                    }
                     api.prevent_exit();
 
                     #[cfg(target_os = "macos")]

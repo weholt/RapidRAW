@@ -37,6 +37,11 @@ use crate::lut_processing::{
 use crate::mask_generation::{MaskDefinition, generate_mask_bitmap};
 
 use crate::cache_utils::{calculate_full_job_hash, calculate_transform_hash};
+use crate::export_workflows::{
+    ExportItemOutcome, ExportResultDetail, WORKFLOW_PROGRESS_EVENT, WorkflowArtifact, WorkflowItem,
+    WorkflowPhaseError, WorkflowProgressEvent, WorkflowProgressPhase, WorkflowRunResult,
+    format_headless_workflow_summary, summarize_export_results,
+};
 use crate::{
     apply_all_transformations, generate_transformed_preview, get_cached_or_generate_mask,
     hydrate_adjustments, load_settings, resolve_warped_image_for_masks,
@@ -74,6 +79,8 @@ pub struct ExportSettings {
     pub export_masks: bool,
     #[serde(default)]
     pub preserve_folders: bool,
+    #[serde(default)]
+    pub workflow_ids: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -388,19 +395,18 @@ where
 impl Drop for ExportTaskGuard {
     fn drop(&mut self) {
         let app_handle = self.app_handle.clone();
-        let _ = finish_export_task(
-            &self.task_token,
-            &self.cancellation_token,
-            |cancelled| match (cancelled, app_handle) {
-                (true, Some(app_handle)) => {
-                    let _ = app_handle.emit("export-cancelled", ());
+        let _ = finish_export_task(&self.task_token, &self.cancellation_token, |cancelled| {
+            if let Some(app_handle) = app_handle {
+                if let Some(export_state) = app_handle.try_state::<AppState>() {
+                    *export_state.workflow_run_id.lock().unwrap() = None;
                 }
-                (false, Some(app_handle)) => {
+                if cancelled {
+                    let _ = app_handle.emit("export-cancelled", ());
+                } else {
                     let _ = app_handle.emit("export-error", "Export task terminated unexpectedly");
                 }
-                _ => {}
-            },
-        );
+            }
+        });
     }
 }
 
@@ -683,7 +689,7 @@ fn export_masks_for_image(
     is_raw: bool,
     app_handle: &tauri::AppHandle,
     cancellation_token: &AtomicBool,
-) -> Result<(), String> {
+) -> Result<Vec<WorkflowArtifact>, String> {
     ensure_export_not_cancelled(cancellation_token)?;
     let (transformed_image, unscaled_crop_offset) =
         apply_all_transformations(Cow::Borrowed(base_image), js_adjustments);
@@ -711,6 +717,7 @@ fn export_masks_for_image(
         ensure_export_not_cancelled(cancellation_token)?;
     }
 
+    let mut mask_artifacts = Vec::new();
     if !mask_bitmaps.is_empty() {
         let tm_override = resolve_tonemapper_override_from_handle(app_handle, is_raw);
         let all_adjustments = get_all_adjustments_from_json(js_adjustments, is_raw, tm_override);
@@ -793,9 +800,18 @@ fn export_masks_for_image(
             #[cfg(not(target_os = "android"))]
             fs::write(&mask_alpha_path, alpha_bytes).map_err(|e| e.to_string())?;
             ensure_export_not_cancelled(cancellation_token)?;
+
+            mask_artifacts.push(WorkflowArtifact {
+                path: mask_image_path.to_string_lossy().to_string(),
+                kind: Some("mask".to_string()),
+            });
+            mask_artifacts.push(WorkflowArtifact {
+                path: mask_alpha_path.to_string_lossy().to_string(),
+                kind: Some("mask".to_string()),
+            });
         }
     }
-    Ok(())
+    Ok(mask_artifacts)
 }
 
 fn export_adjustments_as_lut(
@@ -891,6 +907,30 @@ pub(crate) async fn export_images_impl(
     let context = Arc::new(context);
     let progress_counter = Arc::new(AtomicUsize::new(0));
 
+    // Resolve the immutable workflow plan before any image work starts. An
+    // empty selection skips discovery, probes, and subprocesses entirely.
+    let workflow_engine = crate::export_workflows::prepare_export_workflow_engine(
+        &export_settings.workflow_ids,
+        &state.workflow_discovery_cache,
+        &state.workflow_concurrency_gate,
+        &app_handle,
+        &output_format,
+        export_settings.jpeg_quality,
+        export_settings.keep_metadata,
+        export_settings.strip_gps,
+        paths.len() as u64,
+    )?;
+
+    // Register the run id so cancellation can report the affected run; the
+    // task guard and the terminal finalizer clear it again.
+    if let Some(engine) = workflow_engine.as_ref() {
+        *state.workflow_run_id.lock().unwrap() = Some(engine.run_id().to_string());
+    }
+
+    // Every workflow invocation outcome of this run, gathered from all image
+    // workers and the postBatch phase for the terminal result detail.
+    let workflow_run_results: Arc<Mutex<Vec<WorkflowRunResult>>> = Arc::new(Mutex::new(Vec::new()));
+
     let available_cores = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(1);
@@ -951,6 +991,32 @@ pub(crate) async fn export_images_impl(
             export_items.push((i, path_str, *count, explicit_vc));
         }
 
+        // postBatch requests carry every selected entry, built up front so
+        // early cancellation or skipped workers cannot drop records.
+        let selected_items: Vec<WorkflowItem> = export_items
+            .iter()
+            .map(|(_, path_str, _, _)| {
+                let (source_path, _) = parse_virtual_path(path_str);
+                WorkflowItem {
+                    source_path: source_path.to_string_lossy().to_string(),
+                    exported_path: None,
+                    artifacts: Vec::new(),
+                    error: None,
+                }
+            })
+            .collect();
+
+        // Workflow artifacts must live inside the export root (or workspace)
+        // to be labeled internal; a single explicit file exports to its parent.
+        let export_root = if is_explicit_file_path && total_paths == 1 {
+            output_folder_path
+                .parent()
+                .unwrap_or(output_folder_path)
+                .to_path_buf()
+        } else {
+            output_folder_path.to_path_buf()
+        };
+
         let semaphore = Arc::new(tokio::sync::Semaphore::new(num_threads));
         let mut join_handles = Vec::new();
 
@@ -974,13 +1040,48 @@ pub(crate) async fn export_images_impl(
             let settings = settings.clone();
             let cancellation_token_clone = Arc::clone(&cancellation_token);
             let adjustments_mode = adjustments_mode.clone();
+            let workflow_engine = workflow_engine.clone();
+            let export_root = export_root.clone();
+            let workflow_run_results = Arc::clone(&workflow_run_results);
 
             let handle = tokio::task::spawn_blocking(move || {
-                ensure_export_not_cancelled(&cancellation_token_clone)?;
-
-                let state = app_handle_clone.state::<AppState>();
                 let (source_path, sidecar_path) = parse_virtual_path(&image_path_str);
                 let source_path_str = source_path.to_string_lossy().to_string();
+
+                // Image-phase progress events exist only for workflow runs,
+                // so the UI can attribute image rendering/writing versus
+                // workflow execution inside one run.
+                let emit_image_phase = |phase: WorkflowProgressPhase| {
+                    if let Some(engine) = workflow_engine.as_ref() {
+                        let _ = app_handle_clone.emit(
+                            WORKFLOW_PROGRESS_EVENT,
+                            WorkflowProgressEvent {
+                                run_id: engine.run_id().to_string(),
+                                phase,
+                                workflow_id: None,
+                                source_path: Some(source_path_str.clone()),
+                                index: global_index as u64,
+                                total: total_paths as u64,
+                                timeout_seconds: None,
+                                warning_count: engine.warning_count(),
+                            },
+                        );
+                    }
+                };
+
+                if let Err(error) = ensure_export_not_cancelled(&cancellation_token_clone) {
+                    return (
+                        Err(error),
+                        WorkflowItem {
+                            source_path: source_path_str,
+                            exported_path: None,
+                            artifacts: Vec::new(),
+                            error: Some("Export cancelled".to_string()),
+                        },
+                    );
+                }
+
+                let state = app_handle_clone.state::<AppState>();
 
                 let is_current_edit = match &adjustments_mode {
                     ExportAdjustmentsMode::UseSidecars { active_path, .. } => {
@@ -1051,8 +1152,13 @@ pub(crate) async fn export_images_impl(
                 };
 
                 let extension = output_format.to_lowercase();
+                let output_path_str = output_path.to_string_lossy().to_string();
 
-                let result: Result<(), String> = (|| {
+                // Main export: file, metadata, timestamps, and mask artifacts.
+                // On success this yields the exported path plus the artifact
+                // records postImage workflows receive.
+                let main_result: Result<(String, Vec<WorkflowArtifact>), String> = (|| {
+                    emit_image_phase(WorkflowProgressPhase::Rendering);
                     if extension == "cube" {
                         let cube_bytes = export_adjustments_as_lut(
                             &js_adjustments,
@@ -1076,9 +1182,12 @@ pub(crate) async fn export_images_impl(
                             )?;
                         }
                         #[cfg(not(target_os = "android"))]
-                        fs::write(&output_path, cube_bytes).map_err(|e| e.to_string())?;
+                        {
+                            emit_image_phase(WorkflowProgressPhase::Writing);
+                            fs::write(&output_path, cube_bytes).map_err(|e| e.to_string())?;
+                        }
                         ensure_export_not_cancelled(&cancellation_token_clone)?;
-                        return Ok(());
+                        return Ok((output_path_str.clone(), Vec::new()));
                     }
 
                     let base_image = if is_current_edit {
@@ -1147,6 +1256,7 @@ pub(crate) async fn export_images_impl(
                         &app_handle_clone,
                     )?;
                     ensure_export_not_cancelled(&cancellation_token_clone)?;
+                    emit_image_phase(WorkflowProgressPhase::Writing);
                     save_image_with_metadata(
                         &final_image,
                         &output_path,
@@ -1160,8 +1270,9 @@ pub(crate) async fn export_images_impl(
                     }
                     ensure_export_not_cancelled(&cancellation_token_clone)?;
 
+                    let mut item_artifacts = Vec::new();
                     if export_settings.export_masks {
-                        export_masks_for_image(
+                        item_artifacts = export_masks_for_image(
                             &base_image,
                             &js_adjustments,
                             &export_settings,
@@ -1175,9 +1286,61 @@ pub(crate) async fn export_images_impl(
                         )?;
                     }
 
-                    Ok(())
-                })();
+                    Ok((output_path_str.clone(), item_artifacts))
+                })(
+                );
 
+                let (mut result, mut item_artifacts, mut exported_path) = match main_result {
+                    Ok((exported, artifacts)) => (Ok(()), artifacts, Some(exported)),
+                    Err(error) => (Err(error), Vec::new(), None),
+                };
+
+                // postImage workflows run only for fully written, uncancelled
+                // outputs, sequentially per image in user-selected order.
+                if result.is_ok()
+                    && !cancellation_token_clone.load(Ordering::SeqCst)
+                    && let Some(engine) = workflow_engine.as_ref()
+                    && engine.has_post_image()
+                {
+                    let exported = exported_path.clone().unwrap_or_default();
+                    match engine.run_post_image(
+                        &cancellation_token_clone,
+                        &source_path_str,
+                        &exported,
+                        &mut item_artifacts,
+                        global_index as u64,
+                        &export_root,
+                    ) {
+                        Ok(run_results) => {
+                            for run in &run_results {
+                                if run.status == crate::export_workflows::WorkflowRunStatus::Failed
+                                    || run.status
+                                        == crate::export_workflows::WorkflowRunStatus::TimedOut
+                                {
+                                    log::warn!(
+                                        "postImage workflow '{}' degraded for '{}': {}",
+                                        run.workflow_id,
+                                        image_path_str,
+                                        run.message.as_deref().unwrap_or_default()
+                                    );
+                                }
+                            }
+                            workflow_run_results
+                                .lock()
+                                .unwrap()
+                                .extend(run_results.iter().cloned());
+                        }
+                        Err(WorkflowPhaseError::Cancelled) => {
+                            result = Err("Export cancelled".to_string());
+                        }
+                        Err(error) => {
+                            result = Err(error.to_string());
+                        }
+                    }
+                }
+
+                // The item counts as complete only after its workflow policy
+                // finished, so progress is reported here.
                 if !cancellation_token_clone.load(Ordering::SeqCst) {
                     let current_progress =
                         progress_counter_clone.fetch_add(1, Ordering::SeqCst) + 1;
@@ -1191,32 +1354,160 @@ pub(crate) async fn export_images_impl(
                     );
                 }
 
+                // Settled item record for postBatch workflows: successful
+                // entries carry the exported path and artifacts, failed ones
+                // carry the error (the file may still exist on disk).
+                let item_record = WorkflowItem {
+                    source_path: source_path_str.clone(),
+                    exported_path: exported_path.take().filter(|_| result.is_ok()),
+                    artifacts: item_artifacts,
+                    error: result.as_ref().err().cloned(),
+                };
+
                 drop(permit);
                 if cancellation_token_clone.load(Ordering::SeqCst) {
-                    Err("Export cancelled".to_string())
+                    (Err("Export cancelled".to_string()), item_record)
                 } else {
-                    result
+                    (result, item_record)
                 }
             });
 
             join_handles.push(handle);
         }
 
-        let mut results = Vec::new();
+        let mut outcomes: Vec<(Result<(), String>, WorkflowItem)> = Vec::new();
         for handle in join_handles {
             match handle.await {
-                Ok(res) => results.push(res),
-                Err(e) => results.push(Err(format!("Thread crashed: {}", e))),
+                Ok(outcome) => outcomes.push(outcome),
+                Err(e) => outcomes.push((
+                    Err(format!("Thread crashed: {}", e)),
+                    WorkflowItem {
+                        source_path: String::new(),
+                        exported_path: None,
+                        artifacts: Vec::new(),
+                        error: Some(format!("Thread crashed: {}", e)),
+                    },
+                )),
             }
         }
 
-        let errors: Vec<String> = results.into_iter().filter_map(Result::err).collect();
+        // postBatch workflows run exactly once after every image worker
+        // settled, unless the export was cancelled: unstarted workflows are
+        // then skipped. A fail-policy failure fails the batch.
+        let mut batch_error: Option<String> = None;
+        if let Some(engine) = workflow_engine.as_ref()
+            && engine.has_post_batch()
+        {
+            if cancellation_token.load(Ordering::SeqCst) {
+                log::info!("Skipping postBatch workflows; export was cancelled");
+            } else {
+                let exported_items: Vec<WorkflowItem> =
+                    outcomes.iter().map(|(_, item)| item.clone()).collect();
+                match engine.run_post_batch(
+                    &cancellation_token,
+                    &selected_items,
+                    &exported_items,
+                    &export_root,
+                ) {
+                    Ok(run_results) => {
+                        for run in &run_results {
+                            if run.status == crate::export_workflows::WorkflowRunStatus::Failed
+                                || run.status
+                                    == crate::export_workflows::WorkflowRunStatus::TimedOut
+                            {
+                                log::warn!(
+                                    "postBatch workflow '{}' degraded: {}",
+                                    run.workflow_id,
+                                    run.message.as_deref().unwrap_or_default()
+                                );
+                            }
+                        }
+                        workflow_run_results
+                            .lock()
+                            .unwrap()
+                            .extend(run_results.iter().cloned());
+                    }
+                    Err(WorkflowPhaseError::Failed(failure)) => {
+                        batch_error = Some(failure.to_string());
+                    }
+                    Err(WorkflowPhaseError::Cancelled) => {
+                        log::info!("postBatch workflows cancelled before completion");
+                    }
+                    Err(WorkflowPhaseError::Setup(reason)) => {
+                        batch_error = Some(reason);
+                    }
+                }
+            }
+        }
+        if let Some(engine) = workflow_engine.as_ref() {
+            engine.cleanup();
+        }
+
+        // Terminal detail: every item and workflow outcome, so the UI shows
+        // exactly what failed or warned instead of only "N of M failed".
+        let item_outcomes: Vec<ExportItemOutcome> = outcomes
+            .iter()
+            .map(|(result, item)| ExportItemOutcome {
+                source_path: item.source_path.clone(),
+                exported_path: item.exported_path.clone(),
+                error: result.as_ref().err().cloned(),
+            })
+            .collect();
+        let mut errors: Vec<String> = outcomes
+            .into_iter()
+            .filter_map(|(result, _)| result.err())
+            .collect();
+        if let Some(error) = batch_error {
+            errors.push(error);
+        }
         let error_count = errors.len();
+        let run_id = workflow_engine
+            .as_ref()
+            .map(|engine| engine.run_id().to_string())
+            .unwrap_or_default();
+        let terminal_warning_count = workflow_engine
+            .as_ref()
+            .map(|engine| engine.warning_count())
+            .unwrap_or(0);
+        let workflow_runs = workflow_run_results.lock().unwrap().clone();
         let export_state = app_handle.state::<AppState>();
         let finalized = finish_export_task(
             &export_state.export_task_token,
             &cancellation_token,
             |cancelled| {
+                // The run id registration dies with the task it described.
+                *export_state.workflow_run_id.lock().unwrap() = None;
+
+                let detail = summarize_export_results(
+                    &run_id,
+                    cancelled,
+                    item_outcomes.clone(),
+                    workflow_runs.clone(),
+                );
+                let _ = app_handle.emit("export-result", &detail);
+
+                // Typed terminal workflow event, after every subprocess of
+                // the run has settled and the workspace was cleaned up.
+                if !run_id.is_empty() {
+                    let _ = app_handle.emit(
+                        WORKFLOW_PROGRESS_EVENT,
+                        WorkflowProgressEvent {
+                            run_id: run_id.clone(),
+                            phase: if cancelled {
+                                WorkflowProgressPhase::Cancelled
+                            } else {
+                                WorkflowProgressPhase::Complete
+                            },
+                            workflow_id: None,
+                            source_path: None,
+                            index: total_paths as u64,
+                            total: total_paths as u64,
+                            timeout_seconds: None,
+                            warning_count: terminal_warning_count,
+                        },
+                    );
+                }
+
                 if cancelled {
                     log::info!("Batch export cancelled and worker cleanup completed");
                     let _ = app_handle.emit("export-cancelled", ());
@@ -1336,6 +1627,14 @@ pub async fn run_headless_export(
 
     println!("Found {} images to export. Processing...", paths.len());
 
+    if !session.workflow_ids.is_empty() {
+        println!(
+            "Running {} export workflow(s) in order: {}",
+            session.workflow_ids.len(),
+            session.workflow_ids.join(", ")
+        );
+    }
+
     let export_settings = ExportSettings {
         jpeg_quality: session.quality,
         resize: None,
@@ -1346,6 +1645,7 @@ pub async fn run_headless_export(
         watermark: None,
         export_masks: false,
         preserve_folders: true,
+        workflow_ids: session.workflow_ids.clone(),
     };
 
     let mut custom_adjustments = None;
@@ -1371,6 +1671,16 @@ pub async fn run_headless_export(
             active_adjustments: None,
         }
     };
+
+    // The export task emits the terminal `export-result` detail before it
+    // resolves the completion channel, so the per-run workflow summary is
+    // always printed before this function reports success or failure.
+    use tauri::Listener as _;
+    let _summary_listener = app_handle.listen("export-result", |event| {
+        if let Ok(detail) = serde_json::from_str::<ExportResultDetail>(event.payload()) {
+            print!("{}", format_headless_workflow_summary(&detail));
+        }
+    });
 
     export_images_impl(
         paths,
@@ -1400,6 +1710,24 @@ pub fn cancel_export(
 ) -> Result<(), String> {
     match request_export_cancellation(&state.export_task_token, || {
         let _ = app_handle.emit("export-cancelling", ());
+        // Typed run-scoped event so workflow progress views can attribute the
+        // cancellation; rendering workers and workflow subprocesses both
+        // observe the same token.
+        if let Some(run_id) = state.workflow_run_id.lock().unwrap().clone() {
+            let _ = app_handle.emit(
+                WORKFLOW_PROGRESS_EVENT,
+                WorkflowProgressEvent {
+                    run_id,
+                    phase: WorkflowProgressPhase::Cancelling,
+                    workflow_id: None,
+                    source_path: None,
+                    index: 0,
+                    total: 0,
+                    timeout_seconds: None,
+                    warning_count: 0,
+                },
+            );
+        }
     }) {
         ExportCancellationRequest::Requested => {
             log::info!("Export cancellation requested; workers will stop at the next checkpoint");

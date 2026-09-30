@@ -7,6 +7,10 @@ use serde_json::Value;
 use tauri::{AppHandle, Manager};
 
 use crate::app_state::AppState;
+use crate::import_processing::{
+    CollisionPolicy, IMPORT_PATTERN_VERSION, ImportOperation, ImportPattern, MetadataToken,
+    MissingTokenPolicy, PatternPart,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -84,6 +88,7 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "exposure",
         "brightness",
         "contrast",
+        "levels",
         "curves",
         "pointCurves",
         "parametricCurve",
@@ -100,6 +105,8 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "hsl",
         "hue",
         "colorGrading",
+        "blackWhiteEnabled",
+        "blackWhiteMix",
         "colorCalibration",
         "clarity",
         "structure",
@@ -112,6 +119,7 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "chromaticAberrationRedCyan",
         "chromaticAberrationBlueYellow",
         "vignetteAmount",
+        "vignetting",
         "vignetteFeather",
         "vignetteMidpoint",
         "vignetteRoundness",
@@ -242,6 +250,8 @@ pub struct ExportPreset {
     #[serde(default)]
     pub preserve_folders: Option<bool>,
     #[serde(default)]
+    pub workflow_ids: Vec<String>,
+    #[serde(default)]
     pub last_export_path: Option<String>,
 }
 
@@ -267,6 +277,7 @@ pub fn default_export_presets() -> Vec<ExportPreset> {
             watermark_opacity: 75,
             export_masks: Some(false),
             preserve_folders: Some(false),
+            workflow_ids: Vec::new(),
             last_export_path: None,
         },
         ExportPreset {
@@ -289,9 +300,57 @@ pub fn default_export_presets() -> Vec<ExportPreset> {
             watermark_opacity: 75,
             export_masks: Some(false),
             preserve_folders: Some(false),
+            workflow_ids: Vec::new(),
             last_export_path: None,
         },
     ]
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportPreset {
+    pub id: String,
+    pub name: String,
+    pub folder_pattern: ImportPattern,
+    pub filename_pattern: ImportPattern,
+    pub operation: ImportOperation,
+    pub collision_policy: CollisionPolicy,
+    pub missing_token_policy: MissingTokenPolicy,
+    pub include_associated_files: bool,
+    pub preserve_timestamps: bool,
+    pub use_capture_time: bool,
+    #[serde(default)]
+    pub last_source_location: Option<String>,
+    #[serde(default)]
+    pub last_target_location: Option<String>,
+}
+
+pub fn default_import_presets() -> Vec<ImportPreset> {
+    vec![ImportPreset {
+        id: "last-used".to_string(),
+        name: "Last used".to_string(),
+        folder_pattern: ImportPattern {
+            version: IMPORT_PATTERN_VERSION,
+            parts: Vec::new(),
+            missing_token_policy: MissingTokenPolicy::Empty,
+        },
+        filename_pattern: ImportPattern {
+            version: IMPORT_PATTERN_VERSION,
+            parts: vec![PatternPart::Token {
+                token: MetadataToken::OriginalStem,
+                fallback: Some("image".to_string()),
+            }],
+            missing_token_policy: MissingTokenPolicy::Fallback,
+        },
+        operation: ImportOperation::Copy,
+        collision_policy: CollisionPolicy::RenameWithSuffix,
+        missing_token_policy: MissingTokenPolicy::Fallback,
+        include_associated_files: true,
+        preserve_timestamps: true,
+        use_capture_time: false,
+        last_source_location: None,
+        last_target_location: None,
+    }]
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -392,6 +451,19 @@ pub fn default_open_tree_sections() -> Vec<String> {
     vec!["current".to_string()]
 }
 
+pub fn default_capture_time_grouping_minutes() -> u32 {
+    15
+}
+
+pub fn migrate_capture_gap_seconds(settings: &mut AppSettings) -> bool {
+    if settings.capture_time_grouping_seconds.is_some() {
+        return false;
+    }
+    settings.capture_time_grouping_seconds =
+        Some(settings.capture_time_grouping_minutes.clamp(1, 120) * 60);
+    true
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
@@ -454,6 +526,8 @@ pub struct AppSettings {
     pub library_view_mode: Option<String>,
     #[serde(default = "default_export_presets")]
     pub export_presets: Vec<ExportPreset>,
+    #[serde(default = "default_import_presets")]
+    pub import_presets: Vec<ImportPreset>,
     #[serde(default)]
     pub my_lenses: Option<Vec<MyLens>>,
     #[serde(default)]
@@ -514,6 +588,12 @@ pub struct AppSettings {
     pub require_matching_exif: Option<bool>,
     #[serde(default)]
     pub group_edited_files: Option<bool>,
+    #[serde(default)]
+    pub capture_time_grouping_enabled: bool,
+    #[serde(default = "default_capture_time_grouping_minutes")]
+    pub capture_time_grouping_minutes: u32,
+    #[serde(default)]
+    pub capture_time_grouping_seconds: Option<u32>,
     #[serde(default, skip_serializing)] // legacy
     #[allow(dead_code)]
     pub group_associated_files: Option<bool>,
@@ -570,6 +650,7 @@ impl Default for AppSettings {
             linux_gpu_optimization_migrated_v1: Some(true),
             library_view_mode: Some("flat".to_string()),
             export_presets: default_export_presets(),
+            import_presets: default_import_presets(),
             my_lenses: Some(Vec::new()),
             #[cfg(target_os = "android")]
             high_res_zoom_multiplier: Some(0.75),
@@ -613,6 +694,9 @@ impl Default for AppSettings {
             grouping: Some("off".to_string()),
             require_matching_exif: Some(false),
             group_edited_files: Some(true),
+            capture_time_grouping_enabled: false,
+            capture_time_grouping_minutes: default_capture_time_grouping_minutes(),
+            capture_time_grouping_seconds: None,
             group_associated_files: Some(false),
             group_preferred_type: Some("raw".to_string()),
             always_decode_raw_thumbnails: Some(false),
@@ -653,6 +737,10 @@ pub fn load_settings(app_handle: AppHandle) -> Result<AppSettings, String> {
     let all_current_keys = all_available_adjustments();
     let default_included = default_included_adjustments();
     let mut settings_modified = false;
+
+    if migrate_capture_gap_seconds(&mut settings) {
+        settings_modified = true;
+    }
 
     if settings.root_folders.is_empty()
         && let Some(last) = &settings.last_root_path
@@ -720,4 +808,102 @@ pub fn save_settings(settings: AppSettings, app_handle: AppHandle) -> Result<(),
         .unwrap()
         .set_capacity(cache_size);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracted_controls_are_available_for_copy_and_enabled_by_default() {
+        let available = all_available_adjustments();
+        let included = default_included_adjustments();
+        for key in ["levels", "blackWhiteEnabled", "blackWhiteMix", "vignetting"] {
+            assert!(available.contains(key), "missing available key {key}");
+            assert!(included.contains(key), "missing included key {key}");
+        }
+    }
+
+    #[test]
+    fn typed_contracts_old_settings_receive_capture_grouping_defaults() {
+        let mut old_settings = serde_json::to_value(AppSettings::default()).expect("serialize");
+        let object = old_settings.as_object_mut().expect("settings object");
+        object.remove("captureTimeGroupingEnabled");
+        object.remove("captureTimeGroupingMinutes");
+        object.remove("captureTimeGroupingSeconds");
+
+        let decoded: AppSettings = serde_json::from_value(old_settings).expect("old settings load");
+
+        assert!(!decoded.capture_time_grouping_enabled);
+        assert_eq!(decoded.capture_time_grouping_minutes, 15);
+        assert_eq!(decoded.capture_time_grouping_seconds, None);
+    }
+
+    #[test]
+    fn legacy_capture_gap_minutes_migrate_to_seconds() {
+        let mut settings = AppSettings {
+            capture_time_grouping_seconds: None,
+            capture_time_grouping_minutes: 42,
+            ..AppSettings::default()
+        };
+
+        migrate_capture_gap_seconds(&mut settings);
+
+        assert_eq!(settings.capture_time_grouping_seconds, Some(42 * 60));
+
+        settings.capture_time_grouping_minutes = 15;
+        migrate_capture_gap_seconds(&mut settings);
+        assert_eq!(settings.capture_time_grouping_seconds, Some(42 * 60));
+    }
+
+    #[test]
+    fn import_presets_old_settings_receive_safe_copy_defaults() {
+        let mut old_settings = serde_json::to_value(AppSettings::default()).expect("serialize");
+        old_settings
+            .as_object_mut()
+            .expect("settings object")
+            .remove("importPresets");
+        let decoded: AppSettings = serde_json::from_value(old_settings).expect("old settings load");
+        let preset = decoded.import_presets.first().expect("last-used preset");
+        assert_eq!(preset.operation, ImportOperation::Copy);
+        assert_eq!(preset.collision_policy, CollisionPolicy::RenameWithSuffix);
+        assert!(preset.include_associated_files);
+    }
+
+    #[test]
+    fn export_presets_round_trip_workflow_ids_and_order() {
+        let mut settings = AppSettings::default();
+        settings.export_presets[0].workflow_ids = vec!["receipt".to_string(), "backup".to_string()];
+        let json = serde_json::to_value(&settings).expect("serialize");
+        assert_eq!(
+            json["exportPresets"][0]["workflowIds"],
+            serde_json::json!(["receipt", "backup"])
+        );
+        let decoded: AppSettings = serde_json::from_value(json).expect("decode");
+        assert_eq!(
+            decoded.export_presets[0].workflow_ids,
+            vec!["receipt".to_string(), "backup".to_string()]
+        );
+    }
+
+    #[test]
+    fn export_presets_old_settings_receive_empty_workflow_ids() {
+        let mut old_settings = serde_json::to_value(AppSettings::default()).expect("serialize");
+        let presets = old_settings["exportPresets"]
+            .as_array_mut()
+            .expect("presets");
+        for preset in presets {
+            preset
+                .as_object_mut()
+                .expect("preset")
+                .remove("workflowIds");
+        }
+        let decoded: AppSettings = serde_json::from_value(old_settings).expect("old settings load");
+        assert!(
+            decoded
+                .export_presets
+                .iter()
+                .all(|preset| preset.workflow_ids.is_empty())
+        );
+    }
 }

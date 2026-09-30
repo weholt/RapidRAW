@@ -1,6 +1,75 @@
 import { Crop } from 'react-image-crop';
 import { v4 as uuidv4 } from 'uuid';
 import { SubMask, SubMaskMode } from '../components/panel/right/Masks';
+// Generated from the rapidraw-edit-model crate: single authority for recipe
+// types, defaults, parameter bounds and section order. Do not hand-edit.
+import {
+  DEFAULT_RECIPE,
+} from '../../crates/rapidraw-edit-model/gen/recipe';
+import type { Recipe } from '../../crates/rapidraw-edit-model/gen/recipe';
+
+export {
+  RECIPE_SCHEMA_VERSION,
+  CANONICAL_SECTION_ORDER,
+  RECIPE_PARAM_RANGES,
+  saturationFromLapLegacy,
+  saturationToLapLegacy,
+} from '../../crates/rapidraw-edit-model/gen/recipe';
+export type { Recipe, SectionId } from '../../crates/rapidraw-edit-model/gen/recipe';
+
+/**
+ * Project a validated semantic recipe into the legacy host adjustments shape.
+ * UI-only fields (aiPatches, showClipping) and the host-only inline
+ * `lutData` slot are always reset here; they are never recipe data.
+ */
+export function recipeToAdjustments(
+  recipe: Recipe,
+  oriented?: { width: number; height: number },
+): Adjustments {
+  if (recipe.crop && !oriented) {
+    throw new Error('oriented image dimensions are required to materialize a recipe crop');
+  }
+  return {
+    ...recipe,
+    aiPatches: [],
+    showClipping: false,
+    lutData: null,
+    // The semantic mask shape uses string unions where the host uses enums;
+    // the cast is safe because the string values are identical.
+    masks: recipe.masks as unknown as Adjustments['masks'],
+    crop: recipe.crop
+      ? ({
+          unit: 'px',
+          x: Math.round(recipe.crop.x * oriented!.width),
+          y: Math.round(recipe.crop.y * oriented!.height),
+          width: Math.round(recipe.crop.width * oriented!.width),
+          height: Math.round(recipe.crop.height * oriented!.height),
+        } as Crop)
+      : null,
+  };
+}
+
+/**
+ * Collect persisted render data from the host adjustments shape into a
+ * semantic recipe. UI-only fields are explicitly excluded; numeric and
+ * structural validation happens in rapidraw-edit-model on the Rust side.
+ */
+export function adjustmentsToRecipe(adjustments: Adjustments): Recipe {
+  const { aiPatches: _aiPatches, showClipping: _showClipping, lutData: _lutData, ...renderData } =
+    adjustments;
+  return {
+    ...DEFAULT_RECIPE,
+    ...renderData,
+    // The legacy host mask shape is structurally narrower than the semantic
+    // one; the projection is fully validated Rust-side, which is why the cast
+    // goes through `unknown`.
+    masks: (renderData.masks ?? []).map((mask) => ({
+      ...mask,
+      unsupported: {},
+    })) as unknown as Recipe['masks'],
+    crop: null,
+  };
+}
 
 export enum ActiveChannel {
   Blue = 'blue',
@@ -161,6 +230,8 @@ export interface Adjustments {
   aiPatches: Array<AiPatch>;
   aspectRatio: number | null;
   blacks: number;
+  blackWhiteEnabled: boolean;
+  blackWhiteMix: Recipe['blackWhiteMix'];
   brightness: number;
   centré: number;
   clarity: number;
@@ -217,6 +288,7 @@ export interface Adjustments {
   } | null;
   lensMaker: string | null;
   lensModel: string | null;
+  levels: Recipe['levels'];
   lumaNoiseReduction: number;
   lutData?: string | null;
   lutIntensity?: number;
@@ -250,6 +322,7 @@ export interface Adjustments {
   vignetteFeather: number;
   vignetteMidpoint: number;
   vignetteRoundness: number;
+  vignetting: Recipe['vignetting'];
   whites: number;
 }
 
@@ -357,10 +430,14 @@ export interface MaskContainer {
 export interface Sections {
   [index: string]: Array<string>;
   basic: Array<string>;
+  levels: Array<string>;
   curves: Array<string>;
   color: Array<string>;
+  colorBalance: Array<string>;
+  blackWhite: Array<string>;
   details: Array<string>;
   effects: Array<string>;
+  vignetting: Array<string>;
 }
 
 export interface SectionVisibility {
@@ -387,16 +464,6 @@ const INITIAL_COLOR_GRADING: ColorGradingProps = {
   highlights: { hue: 0, saturation: 0, luminance: 0 },
   midtones: { hue: 0, saturation: 0, luminance: 0 },
   shadows: { hue: 0, saturation: 0, luminance: 0 },
-};
-
-const INITIAL_COLOR_CALIBRATION: ColorCalibration = {
-  shadowsTint: 0,
-  redHue: 0,
-  redSaturation: 0,
-  greenHue: 0,
-  greenSaturation: 0,
-  blueHue: 0,
-  blueSaturation: 0,
 };
 
 export const DEFAULT_PARAMETRIC_CURVE_SETTINGS: ParametricCurveSettings = {
@@ -495,106 +562,7 @@ export const INITIAL_MASK_CONTAINER: MaskContainer = {
   visible: true,
 };
 
-export const INITIAL_ADJUSTMENTS: Adjustments = {
-  aiPatches: [],
-  aspectRatio: null,
-  blacks: 0,
-  brightness: 0,
-  centré: 0,
-  clarity: 0,
-  chromaticAberrationBlueYellow: 0,
-  chromaticAberrationRedCyan: 0,
-  colorCalibration: { ...INITIAL_COLOR_CALIBRATION },
-  colorGrading: { ...INITIAL_COLOR_GRADING },
-  colorNoiseReduction: 0,
-  contrast: 0,
-  crop: null,
-  curves: getDefaultCurves(),
-  pointCurves: getDefaultCurves(),
-  parametricCurve: getDefaultParametricCurve(),
-  curveMode: 'point',
-  dehaze: 0,
-  exposure: 0,
-  flipHorizontal: false,
-  flipVertical: false,
-  flareAmount: 0,
-  glowAmount: 0,
-  grainAmount: 0,
-  grainRoughness: 50,
-  grainSize: 25,
-  halationAmount: 0,
-  highlights: 0,
-  hsl: {
-    aquas: { hue: 0, saturation: 0, luminance: 0 },
-    blues: { hue: 0, saturation: 0, luminance: 0 },
-    greens: { hue: 0, saturation: 0, luminance: 0 },
-    magentas: { hue: 0, saturation: 0, luminance: 0 },
-    oranges: { hue: 0, saturation: 0, luminance: 0 },
-    purples: { hue: 0, saturation: 0, luminance: 0 },
-    reds: { hue: 0, saturation: 0, luminance: 0 },
-    yellows: { hue: 0, saturation: 0, luminance: 0 },
-  },
-  hue: 0,
-  lensBlurAmount: 40,
-  lensBlurDiffusion: 0,
-  lensBlurShape: 'circle',
-  lensBlurDepthMap: null,
-  lensBlurEnabled: false,
-  lensBlurMaxDepth: 100,
-  lensBlurMaxFade: 20,
-  lensBlurMinDepth: 20,
-  lensBlurMinFade: 20,
-  lensCorrectionMode: 'manual',
-  lensDistortionAmount: 100,
-  lensVignetteAmount: 100,
-  lensTcaAmount: 100,
-  lensDistortionEnabled: true,
-  lensTcaEnabled: true,
-  lensVignetteEnabled: true,
-  lensDistortionParams: null,
-  lensMaker: null,
-  lensModel: null,
-  lumaNoiseReduction: 0,
-  lutData: null,
-  lutIntensity: 100,
-  lutName: null,
-  lutPath: null,
-  lutSize: 0,
-  lutIsSceneReferred: false,
-  masks: [],
-  orientationSteps: 0,
-  rotation: 0,
-  saturation: 0,
-  sectionVisibility: {
-    basic: true,
-    curves: true,
-    color: true,
-    details: true,
-    effects: true,
-  },
-  shadows: 0,
-  sharpness: 0,
-  sharpnessThreshold: 15,
-  showClipping: false,
-  structure: 0,
-  temperature: 0,
-  tint: 0,
-  toneMapper: 'basic',
-  transformDistortion: 0,
-  transformVertical: 0,
-  transformHorizontal: 0,
-  transformRotate: 0,
-  transformAspect: 0,
-  transformScale: 100,
-  transformXOffset: 0,
-  transformYOffset: 0,
-  vibrance: 0,
-  vignetteAmount: 0,
-  vignetteFeather: 50,
-  vignetteMidpoint: 50,
-  vignetteRoundness: 0,
-  whites: 0,
-};
+export const INITIAL_ADJUSTMENTS: Adjustments = recipeToAdjustments(DEFAULT_RECIPE);
 
 const deepCloneCurves = (curves: any): Curves => ({
   blue: curves?.blue?.map((p: Coord) => ({ ...p })) || [
@@ -704,6 +672,20 @@ export const normalizeLoadedAdjustments = (loadedAdjustments: Adjustments): any 
     lensTcaEnabled: loadedAdjustments.lensTcaEnabled ?? INITIAL_ADJUSTMENTS.lensTcaEnabled,
     lensVignetteEnabled: loadedAdjustments.lensVignetteEnabled ?? INITIAL_ADJUSTMENTS.lensVignetteEnabled,
     lensDistortionParams: loadedAdjustments.lensDistortionParams ?? INITIAL_ADJUSTMENTS.lensDistortionParams,
+    levels: {
+      ...INITIAL_ADJUSTMENTS.levels,
+      ...(loadedAdjustments.levels || {}),
+      ...Object.fromEntries(
+        (['rgb', 'red', 'green', 'blue'] as const).map((channel) => [
+          channel,
+          { ...INITIAL_ADJUSTMENTS.levels[channel], ...(loadedAdjustments.levels?.[channel] || {}) },
+        ]),
+      ),
+    },
+    vignetting: { ...INITIAL_ADJUSTMENTS.vignetting, ...(loadedAdjustments.vignetting || {}) },
+    blackWhiteMix: INITIAL_ADJUSTMENTS.blackWhiteMix.map(
+      (value, index) => loadedAdjustments.blackWhiteMix?.[index] ?? value,
+    ) as Recipe['blackWhiteMix'],
     transformDistortion: loadedAdjustments.transformDistortion ?? INITIAL_ADJUSTMENTS.transformDistortion,
     transformVertical: loadedAdjustments.transformVertical ?? INITIAL_ADJUSTMENTS.transformVertical,
     transformHorizontal: loadedAdjustments.transformHorizontal ?? INITIAL_ADJUSTMENTS.transformHorizontal,
@@ -757,6 +739,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
       label: 'modals.copyPaste.groups.curves',
       keys: ['curves', 'pointCurves', 'parametricCurve', 'curveMode'],
     },
+    { label: 'editor.adjustments.sections.levels', keys: ['levels'] },
   ],
   color: [
     { label: 'modals.copyPaste.groups.whiteBalance', keys: [ColorAdjustment.Temperature, ColorAdjustment.Tint] },
@@ -766,6 +749,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
       keys: [ColorAdjustment.Hue],
     },
     { label: 'modals.copyPaste.groups.colorGrading', keys: [ColorAdjustment.ColorGrading] },
+    { label: 'editor.adjustments.sections.blackWhite', keys: ['blackWhiteEnabled', 'blackWhiteMix'] },
     { label: 'modals.copyPaste.groups.colorMixer', keys: [ColorAdjustment.Hsl] },
     { label: 'modals.copyPaste.groups.colorCalibration', keys: ['colorCalibration'] },
   ],
@@ -793,6 +777,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
     },
   ],
   effects: [
+    { label: 'editor.adjustments.sections.vignetting', keys: ['vignetting'] },
     {
       label: 'modals.copyPaste.groups.vignette',
       keys: [Effect.VignetteAmount, Effect.VignetteFeather, Effect.VignetteMidpoint, Effect.VignetteRoundness],
@@ -866,6 +851,7 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     BasicAdjustment.Exposure,
     'toneMapper',
   ],
+  levels: ['levels'],
   curves: ['curves', 'pointCurves', 'parametricCurve', 'curveMode'],
   color: [
     ColorAdjustment.Saturation,
@@ -873,10 +859,11 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     ColorAdjustment.Tint,
     ColorAdjustment.Vibrance,
     ColorAdjustment.Hsl,
-    ColorAdjustment.ColorGrading,
     'colorCalibration',
     ColorAdjustment.Hue,
   ],
+  colorBalance: [ColorAdjustment.ColorGrading],
+  blackWhite: ['blackWhiteEnabled', 'blackWhiteMix'],
   details: [
     DetailsAdjustment.Clarity,
     DetailsAdjustment.Dehaze,
@@ -915,4 +902,5 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     Effect.LensBlurMinFade,
     Effect.LensBlurMaxFade,
   ],
+  vignetting: ['vignetting'],
 };

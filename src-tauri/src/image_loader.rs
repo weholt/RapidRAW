@@ -845,7 +845,9 @@ pub async fn load_image(
     {
         *state.original_image.lock().unwrap() = None;
         *state.cached_preview.lock().unwrap() = None;
-        *state.gpu_image_cache.lock().unwrap() = None;
+        if let Some(renderer) = state.gpu_renderer.lock().unwrap().as_ref() {
+            renderer.clear_image_cache();
+        }
         *state.full_warped_cache.lock().unwrap() = None;
         *state.full_transformed_cache.lock().unwrap() = None;
 

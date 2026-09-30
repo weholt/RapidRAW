@@ -7,6 +7,8 @@ import {
   SlidersHorizontal,
   CloudOff,
   Layers,
+  Clock3,
+  TriangleAlert,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
@@ -782,7 +784,7 @@ const RowComponent = ({
   onToggleRecursiveFolder,
   groupBadgeInfo,
 }: any) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const row = rows[index];
 
   useEffect(() => {
@@ -813,7 +815,66 @@ const RowComponent = ({
     ),
   };
 
-  if (row.type === 'header') {
+  if (row.type === 'session-header') {
+    const formatter = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+    const timeFormatter = new Intl.DateTimeFormat(i18n.resolvedLanguage, { timeStyle: 'short' });
+    const start = new Date(row.startMs);
+    const end = new Date(row.endMs);
+    const sameDay =
+      start.getFullYear() === end.getFullYear() &&
+      start.getMonth() === end.getMonth() &&
+      start.getDate() === end.getDate();
+    const range = sameDay
+      ? `${formatter.format(start)} – ${timeFormatter.format(end)}`
+      : `${formatter.format(start)} – ${formatter.format(end)}`;
+    const accessibleLabel = t('library.items.captureSessionLabel', {
+      range,
+      count: row.count,
+      fallbackCount: row.fallbackCount,
+    });
+
+    return (
+      <div
+        style={{
+          ...shiftedStyle,
+          left: 0,
+          width: '100%',
+          paddingLeft: outerPadding === 0 ? 12 : outerPadding,
+          paddingRight: outerPadding === 0 ? 12 : outerPadding,
+          boxSizing: 'border-box',
+        }}
+        className="flex items-center"
+        role="heading"
+        aria-level={3}
+        aria-label={accessibleLabel}
+        data-capture-session-id={row.id}
+      >
+        <div className="flex items-center gap-2 w-full h-8 px-2 rounded-md bg-surface/60 border border-border-color/40">
+          <Clock3 size={14} className={TEXT_COLOR_KEYS[TextColors.secondary]} aria-hidden="true" />
+          <Text variant={TextVariants.small} weight={TextWeights.semibold} className="truncate">
+            {range}
+          </Text>
+          <Text variant={TextVariants.small} color={TextColors.secondary} className="ml-auto shrink-0">
+            {t('library.items.imagesCount', { count: row.count })}
+          </Text>
+          {row.fallbackCount > 0 && (
+            <span
+              className={`${TEXT_COLOR_KEYS[TextColors.secondary]} flex items-center`}
+              data-tooltip={t('library.items.captureSessionFallback', { count: row.fallbackCount })}
+              aria-label={t('library.items.captureSessionFallback', { count: row.fallbackCount })}
+            >
+              <TriangleAlert size={13} />
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (row.type === 'folder-header') {
     let displayPath = row.path;
     if (baseFolderPath && row.path.startsWith(baseFolderPath)) {
       displayPath = row.path.substring(baseFolderPath.length);

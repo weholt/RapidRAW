@@ -1,0 +1,9 @@
+{
+  "id": "example-post-batch",
+  "displayName": "Example batch receipt",
+  "description": "Writes a JSON receipt listing every exported file into the export workspace.",
+  "phase": "postBatch",
+  "order": 200,
+  "timeoutSeconds": 30,
+  "onError": "warn"
+}

@@ -68,12 +68,11 @@ pub fn flush_all_dirty_caches() {
     let mut to_write = Vec::new();
 
     for folder in &dirty_folders {
-        if let Some(folder_map) = state.cache.get(folder) {
-            if !folder_map.is_empty() {
-                if let Some(cache_path) = state.get_cache_file_path(folder) {
-                    to_write.push((cache_path, folder_map.clone()));
-                }
-            }
+        if let Some(folder_map) = state.cache.get(folder)
+            && !folder_map.is_empty()
+            && let Some(cache_path) = state.get_cache_file_path(folder)
+        {
+            to_write.push((cache_path, folder_map.clone()));
         }
     }
 

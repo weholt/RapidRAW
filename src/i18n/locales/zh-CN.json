@@ -17,6 +17,9 @@
       "toneMapper": "色调映射",
       "whites": "白色"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "选择 {{name}} 颜色",
       "calibration": {
@@ -66,13 +69,13 @@
       "whiteBalance": "白平衡"
     },
     "curves": {
-      "channelTitle": "{{channel}} 通道",
       "channels": {
         "blue": "蓝色",
         "green": "绿色",
         "luma": "亮度",
         "red": "红色"
       },
+      "channelTitle": "{{channel}} 通道",
       "copyParametric": "复制 {{channel}} 参数曲线",
       "copyPoint": "复制 {{channel}} 点曲线",
       "curveDataUnavailable": "曲线数据不可用。",
@@ -131,6 +134,32 @@
       "roundness": "圆度",
       "size": "大小",
       "vignette": "暗角"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -299,10 +328,14 @@
       },
       "sections": {
         "basic": "基础",
+        "blackWhite": "Black & White",
         "color": "颜色",
+        "colorBalance": "Color Balance",
         "curves": "曲线",
         "details": "细节",
-        "effects": "效果"
+        "effects": "效果",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "调整",
       "tooltips": {
@@ -398,7 +431,8 @@
         "quickErase": "快速擦除 {{count}}",
         "quickErase_one": "快速擦除 {{count}}",
         "quickErase_other": "快速擦除 {{count}}",
-        "retouch": "修饰 {{count}}"
+        "retouch": "修饰 {{count}}",
+        "retouch_other": "修饰 {{count}}"
       },
       "resetInpaintingTooltip": "重置图像修复",
       "settings": {
@@ -671,8 +705,8 @@
       "organization": {
         "addTagPlaceholder": "添加标签...",
         "colorLabel": "颜色标签",
-        "noTags": "无标签",
         "none": "无",
+        "noTags": "无标签",
         "rating": "评分",
         "ratingLabels": "评分与标签",
         "tags": "标签",
@@ -791,6 +825,18 @@
       "removeGps": "移除 GPS 数据",
       "saveWithMetadata": "保存时包含元数据"
     },
+    "phase": {
+      "cancelling": "正在取消工作流…",
+      "discovering": "正在发现工作流…",
+      "postBatch": "正在运行批处理工作流",
+      "postImage": "正在运行工作流",
+      "rendering": "正在渲染图像",
+      "timeout": "{{seconds}}秒超时",
+      "waiting": "正在等待工作流槽位…",
+      "warnings_one": "{{count}}条警告",
+      "warnings_other": "{{count}}条警告",
+      "writing": "正在写入图像"
+    },
     "resize": {
       "dontEnlarge": "不放大",
       "modes": {
@@ -801,6 +847,24 @@
       },
       "pixels": "像素",
       "resizeToFit": "调整大小以适应"
+    },
+    "result": {
+      "cancelled": "导出已取消",
+      "dismiss": "关闭",
+      "imageErrors": "失败的图像",
+      "statusCancelled": "已取消",
+      "statusFailed": "失败",
+      "statusSucceeded": "成功",
+      "statusTimedOut": "超时",
+      "statusWarned": "有警告",
+      "stderr": "工作流输出",
+      "summary": "已导出 {{total}} 张中的 {{succeeded}} 张",
+      "warningPrefix": "警告",
+      "workflowFailures_one": "{{count}}个工作流运行失败",
+      "workflowFailures_other": "{{count}}个工作流运行失败",
+      "workflowRuns": "工作流运行",
+      "workflowWarnings_one": "{{count}}条工作流警告",
+      "workflowWarnings_other": "{{count}}条工作流警告"
     },
     "sections": {
       "advanced": "高级",
@@ -818,12 +882,12 @@
       "estimatedSize": "预计文件大小：约 {{size}}",
       "estimatedTotalSize": "预计总大小：约 {{size}}",
       "estimatingSize": "正在估算大小...",
+      "exporting": "导出中…",
+      "exportingProgress": "导出中…（{{current}}/{{total}}）",
       "exportMultiple": "导出 {{count}} {{label}}",
       "exportMultiple_one": "导出 {{count}} {{label}}",
       "exportMultiple_other": "导出 {{count}} {{label}}",
       "exportSingle": "导出 {{label}}",
-      "exporting": "导出中…",
-      "exportingProgress": "导出中…（{{current}}/{{total}}）",
       "failed": "导出失败",
       "noImageSelected": "未选择要导出的图像。",
       "noImagesSelected": "未选择图像。",
@@ -849,6 +913,38 @@
       "scale": "缩放",
       "spacing": "间距",
       "watermarkImage": "水印图像"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "我已了解，运行工作流",
+        "decline": "取消导出",
+        "discoveryLocations": "工作流从内置示例和您的 ~/.rapidraw/workflows 目录中发现。您可以随时在那里查看或删除已安装的工作流。",
+        "fullPermissions": "工作流将以您的完整用户权限作为程序运行：可以读取、修改和删除您可访问的任何文件，并可以访问网络。",
+        "intro": "本次导出将在您的电脑上运行 {{selected}} 个工作流。首次执行前请确认：",
+        "noSandbox": "RapidRAW 不会对工作流进行沙箱隔离。超时和输出限制只能中止运行，并不限制工作流对您的文件所能做的操作。",
+        "onlyTrustedSources": "仅运行来自可信来源的工作流。切勿安装来历不明的工作流。",
+        "title": "运行本地导出工作流？"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
@@ -882,8 +978,8 @@
       "iso": "ISO",
       "metadata": "元数据",
       "noMetadataAvailable": "无可用元数据",
-      "noTagsAdded": "未添加标签",
       "none": "无",
+      "noTagsAdded": "未添加标签",
       "rateAndLabel": "评分与标签",
       "rating": "评分",
       "selectImagesToCompare": "选择要比较的图像",
@@ -971,6 +1067,12 @@
       },
       "title": "图库",
       "viewOptions": {
+        "captureSessions": "捕获会话",
+        "captureSessionsEnable": "按捕获时间分组",
+        "captureSessionsGap": "最大相邻间隙",
+        "captureSessionsMinutes_other": "{{count}}分钟",
+        "captureSessionsSeconds_other": "{{count}} 秒",
+        "captureSessionsSliderLabel": "拍摄会话间隔：{{gap}}",
         "currentFolder": "当前文件夹",
         "displayMode": "显示模式",
         "exifDisabledTooltip": "在设置中启用 EXIF 读取以使用此选项。",
@@ -1004,6 +1106,9 @@
       "progress": "导入中...（{{current}}/{{total}}）"
     },
     "items": {
+      "captureSessionFallback_other": "{{count}}图像使用其文件修改时间",
+      "captureSessionLabel": "捕获会话{{range}}、{{count}}图像、{{fallbackCount}}文件时间回退",
+      "captureSessionLabel_other": "捕获会话{{range}}、{{count}}图像、{{fallbackCount}}文件时间回退",
       "cloudPlaceholder": "存储在 iCloud 中 — 未下载",
       "collapseFolder": "折叠文件夹",
       "currentFolder": "当前文件夹",
@@ -1073,6 +1178,11 @@
       "communityPresets": "社区预设",
       "goHome": "返回首页",
       "importImages": "导入图像"
+    },
+    "viewMode": {
+      "culling": "筛选视图",
+      "grid": "网格视图",
+      "list": "列表视图"
     }
   },
   "masks": {
@@ -1200,9 +1310,9 @@
       "applyButton_one": "应用到 1 张图像",
       "applyButton_other": "应用到 {{count}} 张图像",
       "bestImage": "最佳图像",
+      "blurryImagesTab": "模糊图像",
       "blurThreshold": "模糊阈值",
       "blurThresholdDesc": "锐度评分低于此值的图像将被标记。值越高越严格。",
-      "blurryImagesTab": "模糊图像",
       "cancel": "取消",
       "close": "关闭",
       "cullingFailed": "筛选失败",
@@ -1290,17 +1400,64 @@
       "title": "合并为 HDR"
     },
     "importSettings": {
+      "addLiteral": "添加文本",
+      "addToken": "添加{{token}}",
+      "androidCopyOnly": "Android导入带有原始名称的复制文件。移动不可用。",
+      "block": "阻止",
+      "buildingPreview": "正在构建权威预览…",
       "cancel": "取消",
+      "chooseSourceFolder": "选择源文件夹",
+      "collisionPolicy": "现有文件",
+      "copy": "复制",
+      "copyResult": "复制结果详细信息",
       "dateFormat": "日期格式",
       "dateFormatPlaceholder": "例如，YYYY/MM-DD",
       "deleteAfterImport": "成功导入后删除原始文件",
+      "deletePreset": "删除",
       "deleteWarning": "文件将被移至系统回收站。",
+      "destination": "目的地",
+      "empty": "使用空值",
+      "emptyPattern": "无文件夹模式",
+      "fallback": "回退",
+      "fallbackValue": "回退值",
+      "filenamePattern": "文件名模式",
       "fileNaming": "文件命名",
       "folderOrganization": "文件夹组织",
+      "folderPattern": "文件夹模式",
+      "includeSidecars": "包括RapidRAW和XMP侧车",
+      "literalValue": "文本值",
+      "metadataTokens": "元数据令牌",
+      "missingTokenPolicy": "缺少元数据",
+      "move": "移动到已验证的副本之后",
+      "moveLeft": "向左移动块",
+      "moveRight": "右移区块",
+      "next": "下一步",
+      "operation": "操作",
       "organizeByDate": "按日期组织到子文件夹",
+      "patternText": "图案文字",
+      "preserveTimestamps": "保留源时间戳",
+      "preset": "导入预设",
+      "presetName": "预设名称",
+      "preview": "导入预览",
+      "previewCount_other": "{{count}}支持文件； {{unsupported}}不支持",
+      "previewPrompt": "选择源和模式以预览每个目的地。",
+      "previous": "上一个",
+      "progressPhase": "导入阶段： {{phase}}",
+      "recursive": "包括子文件夹",
+      "removeBlock": "移除区块",
+      "renamePreset": "重命名",
+      "renameWithSuffix": "使用后缀重命名",
+      "resolvePreviewErrors": "首先解决阻止预览错误",
+      "resultSummary": "{{succeeded}}成功， {{failed}}失败， {{retained}}源保留",
+      "savePreset": "保存预设",
+      "selectFolder": "选择源文件夹",
+      "skip": "跳过",
+      "source": "来源",
       "sourceFiles": "源文件",
       "startImport": "开始导入",
-      "title": "导入设置"
+      "status": "状态",
+      "title": "导入设置",
+      "useCaptureTime": "设置捕获时间的时间戳"
     },
     "lensCorrection": {
       "amount": "数量",
@@ -1761,8 +1918,8 @@
     "tagging": {
       "addCustomPlaceholder": "添加自定义 AI 标签（逗号分隔）...",
       "addCustomTooltip": "添加 AI 标签",
-      "addShortcutTooltip": "添加快捷方式",
       "addShortcutsPlaceholder": "添加快捷方式（逗号分隔）...",
+      "addShortcutTooltip": "添加快捷方式",
       "aiTagging": "AI 标签",
       "aiTaggingDesc": "使用 AI（CLIP）模型启用自动图像标签。这将下载额外的模型，并在浏览文件夹时影响性能。标签用于搜索文件夹。",
       "amount": "数量",

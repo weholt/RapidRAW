@@ -6,12 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { Row } from './LibraryItems';
 import { useShallow } from 'zustand/react/shallow';
 import { useLibraryStore } from '../../../store/useLibraryStore';
-import { LibraryViewMode, SortDirection, LibraryDisplayMode } from '../../ui/AppProperties';
+import { ImageFile, LibraryViewMode, SortDirection, LibraryDisplayMode } from '../../ui/AppProperties';
 import Text from '../../ui/Text';
 import { TextColors, TextVariants, TextWeights, TEXT_COLOR_KEYS } from '../../../types/typography';
 import { useProcessStore } from '../../../store/useProcessStore';
 import { ExifOverlay } from '../../ui/AppProperties';
 import { useSettingsStore } from '../../../store/useSettingsStore';
+import { CaptureSession } from '../../../utils/captureTimeGrouping';
+
+const LibraryRow = (props: React.ComponentProps<typeof Row>): React.ReactElement => <Row {...props} />;
 
 function ListHeader({ widths, setWidths, containerRef, sortCriteria, onSortChange }: any) {
   const { t } = useTranslation();
@@ -174,6 +177,7 @@ export default function LibraryGrid(props: any) {
     thumbnailSizeOptions,
     onThumbnailSizeChange,
     groupBadgeInfo,
+    captureSessions,
   } = props;
   const { listColumnWidths, setLibrary, sortCriteria, setSortCriteria } = useLibraryStore(
     useShallow((state) => ({
@@ -314,9 +318,35 @@ export default function LibraryGrid(props: any) {
 
     const listRowHeight = Math.max(36, Math.min(300, (availableWidth * listColumnWidths.thumbnail) / totalBase));
     const rowHeight = isListView ? listRowHeight : itemWidth + ITEM_GAP;
-    const headerHeight = 40;
+    const folderHeaderHeight = 40;
+    const sessionHeaderHeight = 44;
 
     const rows: any[] = [];
+    const appendCaptureRows = (images: ImageFile[]) => {
+      if (!captureSessions?.length) {
+        for (let i = 0; i < images.length; i += columnCount) {
+          rows.push({ type: 'images', images: images.slice(i, i + columnCount), startIndex: i });
+        }
+        return;
+      }
+
+      const visiblePaths = new Set(images.map((image) => image.path));
+      captureSessions.forEach((session: CaptureSession) => {
+        const sessionImages = session.images.filter((image) => visiblePaths.has(image.path));
+        if (sessionImages.length === 0) return;
+        rows.push({
+          type: 'session-header',
+          id: session.id,
+          startMs: session.startMs,
+          endMs: session.endMs,
+          count: sessionImages.length,
+          fallbackCount: session.fallbackCount,
+        });
+        for (let i = 0; i < sessionImages.length; i += columnCount) {
+          rows.push({ type: 'images', images: sessionImages.slice(i, i + columnCount), startIndex: i });
+        }
+      });
+    };
 
     if (libraryViewMode === LibraryViewMode.Recursive) {
       const groups = groupImagesByFolder(imageList, currentFolderPath);
@@ -324,26 +354,14 @@ export default function LibraryGrid(props: any) {
         if (group.images.length === 0) return;
 
         const isExpanded = !collapsedRecursiveFolders.has(group.path);
-        rows.push({ type: 'header', path: group.path, count: group.images.length, isExpanded });
+        rows.push({ type: 'folder-header', path: group.path, count: group.images.length, isExpanded });
 
         if (isExpanded) {
-          for (let i = 0; i < group.images.length; i += columnCount) {
-            rows.push({
-              type: 'images',
-              images: group.images.slice(i, i + columnCount),
-              startIndex: i,
-            });
-          }
+          appendCaptureRows(group.images);
         }
       });
     } else {
-      for (let i = 0; i < imageList.length; i += columnCount) {
-        rows.push({
-          type: 'images',
-          images: imageList.slice(i, i + columnCount),
-          startIndex: i,
-        });
-      }
+      appendCaptureRows(imageList);
     }
 
     rows.push({ type: 'footer' });
@@ -357,7 +375,8 @@ export default function LibraryGrid(props: any) {
       ITEM_GAP,
       columnCount,
       isListView,
-      headerHeight,
+      folderHeaderHeight,
+      sessionHeaderHeight,
     };
   }, [
     gridSize.width,
@@ -369,6 +388,7 @@ export default function LibraryGrid(props: any) {
     listColumnWidths.thumbnail,
     currentFolderPath,
     thumbnailSizeOptions,
+    captureSessions,
   ]);
 
   useEffect(() => {
@@ -405,36 +425,18 @@ export default function LibraryGrid(props: any) {
     prevDisplayMode.current = libraryDisplayMode;
     prevListElement.current = element;
 
-    const { rows, rowHeight, headerHeight, columnCount } = gridData;
+    const { rows, rowHeight, folderHeaderHeight, sessionHeaderHeight } = gridData;
 
     let targetTop = 0;
     let found = false;
-
-    if (libraryViewMode === LibraryViewMode.Recursive) {
-      const groups = groupImagesByFolder(imageList, currentFolderPath);
-      for (const group of groups) {
-        if (group.images.length === 0) continue;
-
-        targetTop += headerHeight;
-
-        const imageIndex = group.images.findIndex((img) => img.path === activePath);
-        if (imageIndex !== -1) {
-          const rowIndex = Math.floor(imageIndex / columnCount);
-          targetTop += rowIndex * rowHeight;
-          found = true;
-          break;
-        }
-
-        const rowsInGroup = Math.ceil(group.images.length / columnCount);
-        targetTop += rowsInGroup * rowHeight;
-      }
-    } else {
-      const index = imageList.findIndex((img) => img.path === activePath);
-      if (index !== -1) {
-        const rowIndex = Math.floor(index / columnCount);
-        targetTop = rowIndex * rowHeight;
+    for (const row of rows) {
+      if (row.type === 'images' && row.images.some((image: ImageFile) => image.path === activePath)) {
         found = true;
+        break;
       }
+      if (row.type === 'folder-header') targetTop += folderHeaderHeight;
+      else if (row.type === 'session-header') targetTop += sessionHeaderHeight;
+      else if (row.type === 'images') targetTop += rowHeight;
     }
 
     if (found) {
@@ -516,7 +518,9 @@ export default function LibraryGrid(props: any) {
     (index: number) => {
       if (!gridData) return 0;
       if (gridData.rows[index].type === 'footer') return gridData.isListView ? 24 : gridData.OUTER_PADDING;
-      return gridData.rows[index].type === 'header' ? gridData.headerHeight : gridData.rowHeight;
+      if (gridData.rows[index].type === 'folder-header') return gridData.folderHeaderHeight;
+      if (gridData.rows[index].type === 'session-header') return gridData.sessionHeaderHeight;
+      return gridData.rowHeight;
     },
     [gridData],
   );
@@ -570,7 +574,7 @@ export default function LibraryGrid(props: any) {
             rowHeight={getItemSize}
             onScroll={(e: React.UIEvent<HTMLElement>) => handleScroll(e.currentTarget.scrollTop)}
             className="custom-scrollbar"
-            rowComponent={Row}
+            rowComponent={LibraryRow}
             rowProps={memoizedRowProps}
           />
         </div>

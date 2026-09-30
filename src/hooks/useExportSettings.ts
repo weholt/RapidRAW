@@ -20,6 +20,7 @@ export function useExportSettings() {
   const [watermarkScale, setWatermarkScale] = useState(10);
   const [watermarkSpacing, setWatermarkSpacing] = useState(5);
   const [watermarkOpacity, setWatermarkOpacity] = useState(75);
+  const [workflowIds, setWorkflowIds] = useState<string[]>([]);
 
   const handleApplyPreset = useCallback((preset: ExportPreset) => {
     setFileFormat(preset.fileFormat);
@@ -40,6 +41,7 @@ export function useExportSettings() {
     setWatermarkScale(preset.watermarkScale);
     setWatermarkSpacing(preset.watermarkSpacing);
     setWatermarkOpacity(preset.watermarkOpacity);
+    setWorkflowIds(preset.workflowIds ?? []);
   }, []);
 
   const currentSettingsObject = useMemo(
@@ -62,6 +64,7 @@ export function useExportSettings() {
       watermarkScale,
       watermarkSpacing,
       watermarkOpacity,
+      workflowIds,
     }),
     [
       fileFormat,
@@ -82,7 +85,8 @@ export function useExportSettings() {
       watermarkScale,
       watermarkSpacing,
       watermarkOpacity,
-    ]
+      workflowIds,
+    ],
   );
 
   return {
@@ -122,6 +126,8 @@ export function useExportSettings() {
     setWatermarkSpacing,
     watermarkOpacity,
     setWatermarkOpacity,
+    workflowIds,
+    setWorkflowIds,
     handleApplyPreset,
     currentSettingsObject,
   };

@@ -30,6 +30,17 @@ struct ColorCalibrationSettings {
     _pad1: f32,
 }
 
+struct LevelsChannel {
+    input_black: f32,
+    input_scale: f32,
+    output_black: f32,
+    output_scale: f32,
+    exponent: f32,
+    is_active: u32,
+    _pad1: f32,
+    _pad2: f32,
+};
+
 struct GlobalAdjustments {
     exposure: f32,
     brightness: f32,
@@ -115,6 +126,15 @@ struct GlobalAdjustments {
     halation_amount: f32,
     flare_amount: f32,
     sharpness_threshold: f32,
+    levels: array<LevelsChannel, 4>,
+    vignetting: vec4<f32>,
+    vignetting_crop: vec4<f32>,
+    black_white_enabled: u32,
+    _pad_bw1: f32,
+    _pad_bw2: f32,
+    _pad_bw3: f32,
+    black_white_mix0: vec4<f32>,
+    black_white_mix1: vec4<f32>,
 }
 
 struct MaskAdjustments {
@@ -691,6 +711,25 @@ fn apply_hsl_panel(color: vec3<f32>, hsl_adjustments: array<HslColor, 8>, coords
     }
     let final_color = hs_shifted_rgb * (target_luma / new_luma);
     return final_color;
+}
+
+fn apply_black_white(color: vec3<f32>, mix0: vec4<f32>, mix1: vec4<f32>) -> vec3<f32> {
+    let safe = max(color, vec3<f32>(0.0));
+    let hsv = rgb_to_hsv(safe);
+    var weighted: f32 = 0.0;
+    var total: f32 = 0.0;
+    for (var i = 0u; i < 8u; i = i + 1u) {
+        let range = HSL_RANGES[i];
+        let influence = get_raw_hsl_influence(hsv.x, range.center, range.width);
+        var mix_value: f32;
+        if (i < 4u) { mix_value = mix0[i]; }
+        else { mix_value = mix1[i - 4u]; }
+        weighted += mix_value * influence;
+        total += influence;
+    }
+    let color_weight = smoothstep(0.02, 0.25, hsv.y);
+    let adjustment = select(0.0, weighted / max(total, 0.0001), total > 0.0001);
+    return vec3<f32>(max(0.0, get_luma(safe) * (1.0 + adjustment * color_weight)));
 }
 
 fn apply_color_grading(color: vec3<f32>, shadows: ColorGradeSettings, midtones: ColorGradeSettings, highlights: ColorGradeSettings, global: ColorGradeSettings, blending: f32, balance: f32) -> vec3<f32> {
@@ -1373,6 +1412,26 @@ fn is_default_curve(points: array<Point, 16>, count: u32) -> bool {
     return is_identity && p0_is_origin && p_last_is_end;
 }
 
+// Independent display-referred Levels. Extrapolate outside the input range:
+// output points map the selected inputs; they are not absolute clipping limits.
+fn apply_levels_channel(value: f32, levels: LevelsChannel) -> f32 {
+    if (levels.is_active == 0u) { return value; }
+    var t = (value - levels.input_black) * levels.input_scale;
+    if (t > 0.0 && t < 1.0 && levels.exponent != 1.0) {
+        t = pow(t, levels.exponent);
+    }
+    return levels.output_black + t * levels.output_scale;
+}
+
+fn apply_levels(color: vec3<f32>) -> vec3<f32> {
+    let master = adjustments.global.levels[0];
+    return vec3<f32>(
+        apply_levels_channel(apply_levels_channel(color.r, master), adjustments.global.levels[1]),
+        apply_levels_channel(apply_levels_channel(color.g, master), adjustments.global.levels[2]),
+        apply_levels_channel(apply_levels_channel(color.b, master), adjustments.global.levels[3])
+    );
+}
+
 fn apply_all_curves(color: vec3<f32>, luma_curve: array<Point, 16>, luma_curve_count: u32, red_curve: array<Point, 16>, red_curve_count: u32, green_curve: array<Point, 16>, green_curve_count: u32, blue_curve: array<Point, 16>, blue_curve_count: u32) -> vec3<f32> {
     let red_is_default = is_default_curve(red_curve, red_curve_count);
     let green_is_default = is_default_curve(green_curve, green_curve_count);
@@ -1820,6 +1879,26 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         }
     }
 
+    // Input is the oriented, cropped image. Absolute pixel centers keep
+    // preview resolution, tiles and ROI from moving the vignette.
+    if (adjustments.global.vignetting.x != 0.0) {
+        let dims = vec2<f32>(textureDimensions(input_texture));
+        let pixel = vec2<f32>(absolute_coord) + vec2<f32>(0.5);
+        let method = adjustments.global.vignetting.y;
+        var radius: f32;
+        if (method < 0.5) {
+            radius = length((pixel / dims - 0.5) * 2.0);
+        } else if (method < 1.5) {
+            radius = length(pixel - dims * 0.5) * 2.0 / max(dims.x, dims.y);
+        } else {
+            let crop = adjustments.global.vignetting_crop;
+            let full_dims = dims / max(crop.zw, vec2<f32>(0.000001));
+            let full_pixel = pixel + crop.xy * full_dims;
+            radius = length(full_pixel - full_dims * 0.5) * 2.0 / max(full_dims.x, full_dims.y);
+        }
+        composite_rgb_linear *= exp2(adjustments.global.vignetting.x * smoothstep(0.25, 1.0, radius));
+    }
+
     var default_tonemapped: vec3<f32>;
     if (adjustments.global.tonemapper_mode == 1u) {
         default_tonemapped = agx_full_transform(composite_rgb_linear);
@@ -1844,7 +1923,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         base_srgb = default_tonemapped;
     }
 
-    var final_rgb = apply_all_curves(base_srgb,
+    var final_rgb = apply_all_curves(apply_levels(base_srgb),
         adjustments.global.luma_curve, adjustments.global.luma_curve_count,
         adjustments.global.red_curve, adjustments.global.red_curve_count,
         adjustments.global.green_curve, adjustments.global.green_curve_count,
@@ -1868,6 +1947,10 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     if (adjustments.global.has_lut == 1u && adjustments.global.lut_is_scene_referred == 0u) {
         let lut_color = sample_lut_tetrahedral(final_rgb);
         final_rgb = mix(final_rgb, lut_color, adjustments.global.lut_intensity);
+    }
+
+    if (adjustments.global.black_white_enabled == 1u) {
+        final_rgb = apply_black_white(final_rgb, adjustments.global.black_white_mix0, adjustments.global.black_white_mix1);
     }
 
     if (adjustments.global.grain_amount > 0.0) {

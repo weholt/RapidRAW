@@ -17,6 +17,9 @@
       "toneMapper": "Tonemapper",
       "whites": "Weiß"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "{{name}}-Farbe auswählen",
       "calibration": {
@@ -66,13 +69,13 @@
       "whiteBalance": "Weißabgleich"
     },
     "curves": {
-      "channelTitle": "{{channel}}-Kanal",
       "channels": {
         "blue": "Blau",
         "green": "Grün",
         "luma": "Luma",
         "red": "Rot"
       },
+      "channelTitle": "{{channel}}-Kanal",
       "copyParametric": "Parametrische {{channel}}-Kurve kopieren",
       "copyPoint": "Punktkurve ({{channel}}) kopieren",
       "curveDataUnavailable": "Kurvendaten nicht verfügbar.",
@@ -131,6 +134,32 @@
       "roundness": "Rundheit",
       "size": "Größe",
       "vignette": "Vignettierung"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -299,10 +328,14 @@
       },
       "sections": {
         "basic": "Basis",
+        "blackWhite": "Black & White",
         "color": "Farbe",
+        "colorBalance": "Color Balance",
         "curves": "Kurven",
         "details": "Details",
-        "effects": "Effekte"
+        "effects": "Effekte",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "Anpassungen",
       "tooltips": {
@@ -400,7 +433,9 @@
         "quickErase": "Schnelles Löschen {{count}}",
         "quickErase_one": "Schnelles Löschen {{count}}",
         "quickErase_other": "Schnelles Löschen {{count}}",
-        "retouch": "Retusche {{count}}"
+        "retouch": "Retusche {{count}}",
+        "retouch_one": "Retuschiere {{count}}",
+        "retouch_other": "Retuschieren {{count}}"
       },
       "resetInpaintingTooltip": "Reparieren zurücksetzen",
       "settings": {
@@ -673,8 +708,8 @@
       "organization": {
         "addTagPlaceholder": "Tag hinzufügen...",
         "colorLabel": "Farbmarkierung",
-        "noTags": "Keine Tags",
         "none": "Keine",
+        "noTags": "Keine Tags",
         "rating": "Bewertung",
         "ratingLabels": "Bewertung & Markierungen",
         "tags": "Tags",
@@ -793,6 +828,18 @@
       "removeGps": "GPS-Daten entfernen",
       "saveWithMetadata": "Mit Metadaten speichern"
     },
+    "phase": {
+      "cancelling": "Workflows werden abgebrochen…",
+      "discovering": "Workflows werden gesucht…",
+      "postBatch": "Batch-Workflow läuft",
+      "postImage": "Workflow läuft",
+      "rendering": "Bild wird gerendert",
+      "timeout": "{{seconds}}s Zeitlimit",
+      "waiting": "Warten auf einen Workflow-Slot…",
+      "warnings_one": "{{count}} Warnung",
+      "warnings_other": "{{count}} Warnungen",
+      "writing": "Bild wird geschrieben"
+    },
     "resize": {
       "dontEnlarge": "Nicht vergrößern",
       "modes": {
@@ -803,6 +850,24 @@
       },
       "pixels": "Pixel",
       "resizeToFit": "In Rahmen einpassen"
+    },
+    "result": {
+      "cancelled": "Export abgebrochen",
+      "dismiss": "Schließen",
+      "imageErrors": "Fehlgeschlagene Bilder",
+      "statusCancelled": "abgebrochen",
+      "statusFailed": "fehlgeschlagen",
+      "statusSucceeded": "erfolgreich",
+      "statusTimedOut": "Zeitlimit überschritten",
+      "statusWarned": "mit Warnungen",
+      "stderr": "Workflow-Ausgabe",
+      "summary": "{{succeeded}} von {{total}} exportiert",
+      "warningPrefix": "Warnung",
+      "workflowFailures_one": "{{count}} Workflow-Lauf fehlgeschlagen",
+      "workflowFailures_other": "{{count}} Workflow-Läufe fehlgeschlagen",
+      "workflowRuns": "Workflow-Läufe",
+      "workflowWarnings_one": "{{count}} Workflow-Warnung",
+      "workflowWarnings_other": "{{count}} Workflow-Warnungen"
     },
     "sections": {
       "advanced": "Erweitert",
@@ -820,12 +885,12 @@
       "estimatedSize": "Geschätzte Dateigröße: ~{{size}}",
       "estimatedTotalSize": "Geschätzte Gesamtgröße: ~{{size}}",
       "estimatingSize": "Größe wird geschätzt...",
+      "exporting": "Wird exportiert…",
+      "exportingProgress": "Wird exportiert… ({{current}}/{{total}})",
       "exportMultiple": "Exportiere {{count}} {{label}}",
       "exportMultiple_one": "Exportiere {{count}} {{label}}",
       "exportMultiple_other": "Exportiere {{count}} {{label}}",
       "exportSingle": "{{label}} exportieren",
-      "exporting": "Wird exportiert…",
-      "exportingProgress": "Wird exportiert… ({{current}}/{{total}})",
       "failed": "Export fehlgeschlagen",
       "noImageSelected": "Kein Bild zum Exportieren ausgewählt.",
       "noImagesSelected": "Keine Bilder ausgewählt.",
@@ -851,6 +916,38 @@
       "scale": "Skalierung",
       "spacing": "Abstand",
       "watermarkImage": "Wasserzeichen-Bild"
+    },
+    "workflows": {
+      "consent": {
+        "accept": "Verstanden, Workflows ausführen",
+        "decline": "Export abbrechen",
+        "discoveryLocations": "Workflows werden aus den mitgelieferten Beispielen und deinem Ordner ~/.rapidraw/workflows erkannt. Prüfe oder entferne installierte Workflows dort jederzeit.",
+        "fullPermissions": "Workflows laufen als Programme mit deinen vollen Benutzerrechten: Sie können jede Datei, auf die du Zugriff hast, lesen, ändern und löschen und das Netzwerk erreichen.",
+        "intro": "Dieser Export führt {{selected}} Workflow(s) auf deinem Computer aus. Bitte bestätige vor der ersten Workflow-Ausführung:",
+        "noSandbox": "RapidRAW sandboxed Workflows nicht. Timeouts und Ausgabegrenzen begrenzen einen Lauf, beschränken aber nicht, was ein Workflow mit deinen Dateien tun kann.",
+        "onlyTrustedSources": "Führe nur Workflows aus, denen du vertraust. Installiere niemals einen Workflow aus unbekannter Quelle.",
+        "title": "Lokale Export-Workflows ausführen?"
+      },
+      "error": "Workflow discovery failed",
+      "languageJavaScript": "JavaScript",
+      "languagePython": "Python",
+      "loading": "Discovering workflows...",
+      "missingBadge": "Missing",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "noWorkflows": "No workflows discovered",
+      "phasePostBatch": "after batch",
+      "phasePostImage": "after each image",
+      "reasonInvalid": "Invalid workflow",
+      "reasonMissing": "Missing workflow: not found during discovery. It may have been removed from the workflow directories.",
+      "reasonUnavailable": "Runtime unavailable",
+      "refresh": "Refresh workflows",
+      "remove": "Remove",
+      "searchPlaceholder": "Search workflows",
+      "selectedTitle": "Selected order",
+      "sourceBundled": "bundled",
+      "sourceUser": "user",
+      "title": "Export Workflows"
     }
   },
   "library": {
@@ -884,8 +981,8 @@
       "iso": "ISO",
       "metadata": "Metadaten",
       "noMetadataAvailable": "Keine Metadaten verfügbar",
-      "noTagsAdded": "Keine Tags hinzugefügt",
       "none": "Keine",
+      "noTagsAdded": "Keine Tags hinzugefügt",
       "rateAndLabel": "Bewerten & Markieren",
       "rating": "Bewertung",
       "selectImagesToCompare": "Wählen Sie Bilder zum Vergleichen aus",
@@ -973,6 +1070,14 @@
       },
       "title": "Bibliothek",
       "viewOptions": {
+        "captureSessions": "Capture Sessions",
+        "captureSessionsEnable": "Group by capture time",
+        "captureSessionsGap": "Maximum adjacent gap",
+        "captureSessionsMinutes_one": "1 minute",
+        "captureSessionsMinutes_other": "{{count}} minutes",
+        "captureSessionsSeconds_one": "1 Sekunde",
+        "captureSessionsSeconds_other": "{{count}} Sekunden",
+        "captureSessionsSliderLabel": "Abstand zwischen Aufnahmesitzungen: {{gap}}",
         "currentFolder": "Aktueller Ordner",
         "displayMode": "Anzeigemodus",
         "exifDisabledTooltip": "EXIF-Lesen in den Einstellungen aktivieren, um diese Option zu nutzen.",
@@ -1006,6 +1111,11 @@
       "progress": "Wird importiert... ({{current}}/{{total}})"
     },
     "items": {
+      "captureSessionFallback_one": "1 image uses its file modified time",
+      "captureSessionFallback_other": "{{count}} images use their file modified time",
+      "captureSessionLabel": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_one": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
+      "captureSessionLabel_other": "Capture session {{range}}, {{count}} images, {{fallbackCount}} file-time fallbacks",
       "cloudPlaceholder": "In iCloud gespeichert — nicht heruntergeladen",
       "collapseFolder": "Ordner zuklappen",
       "currentFolder": "Aktueller Ordner",
@@ -1075,6 +1185,11 @@
       "communityPresets": "Community-Vorgaben",
       "goHome": "Zur Startseite",
       "importImages": "Bilder importieren"
+    },
+    "viewMode": {
+      "culling": "Auswahlansicht",
+      "grid": "Rasteransicht",
+      "list": "Listenansicht"
     }
   },
   "masks": {
@@ -1202,9 +1317,9 @@
       "applyButton_one": "Auf 1 Bild anwenden",
       "applyButton_other": "Auf {{count}} Bilder anwenden",
       "bestImage": "Bestes Bild",
+      "blurryImagesTab": "Unscharfe Bilder",
       "blurThreshold": "Unschärfe-Schwellenwert",
       "blurThresholdDesc": "Bilder mit einem Schärfewert unter diesem Wert werden markiert. Höher ist strenger.",
-      "blurryImagesTab": "Unscharfe Bilder",
       "cancel": "Abbrechen",
       "close": "Schließen",
       "cullingFailed": "Aussortieren fehlgeschlagen",
@@ -1292,17 +1407,65 @@
       "title": "Zu HDR zusammenfügen"
     },
     "importSettings": {
+      "addLiteral": "Text hinzufügen",
+      "addToken": "{{token}} hinzufügen",
+      "androidCopyOnly": "Android-Importe kopieren Dateien unter ihrem ursprünglichen Namen. Verschieben ist nicht verfügbar.",
+      "block": "Blockieren",
+      "buildingPreview": "Verbindliche Vorschau wird erstellt…",
       "cancel": "Abbrechen",
+      "chooseSourceFolder": "Quellordner auswählen",
+      "collisionPolicy": "Vorhandene Dateien",
+      "copy": "Kopieren",
+      "copyResult": "Ergebnisdetails kopieren",
       "dateFormat": "Datumsformat",
       "dateFormatPlaceholder": "z. B., YYYY/MM-DD",
       "deleteAfterImport": "Originale nach erfolgreichem Import löschen",
+      "deletePreset": "Löschen",
       "deleteWarning": "Dateien werden in den Systempapierkorb verschoben.",
+      "destination": "Ziel",
+      "empty": "Leeren Wert verwenden",
+      "emptyPattern": "Kein Ordnermuster",
+      "fallback": "Ersatzwert",
+      "fallbackValue": "Ersatzwert",
+      "filenamePattern": "Dateinamensmuster",
       "fileNaming": "Dateibenennung",
       "folderOrganization": "Ordnerorganisation",
+      "folderPattern": "Ordnermuster",
+      "includeSidecars": "RapidRAW- und XMP-Sidecars einschließen",
+      "literalValue": "Textwert",
+      "metadataTokens": "Metadaten-Token",
+      "missingTokenPolicy": "Fehlende Metadaten",
+      "move": "Nach geprüftem Kopieren verschieben",
+      "moveLeft": "Block nach links verschieben",
+      "moveRight": "Block nach rechts verschieben",
+      "next": "Weiter",
+      "operation": "Vorgang",
       "organizeByDate": "In Unterordner nach Datum organisieren",
+      "patternText": "Mustertext",
+      "preserveTimestamps": "Quellzeitstempel beibehalten",
+      "preset": "Importvorgabe",
+      "presetName": "Name der Vorgabe",
+      "preview": "Importvorschau",
+      "previewCount_one": "{{count}} unterstützte Datei; {{unsupported}} nicht unterstützt",
+      "previewCount_other": "{{count}} unterstützte Dateien; {{unsupported}} nicht unterstützt",
+      "previewPrompt": "Quellen und Muster auswählen, um alle Ziele anzuzeigen.",
+      "previous": "Zurück",
+      "progressPhase": "Importphase: {{phase}}",
+      "recursive": "Unterordner einschließen",
+      "removeBlock": "Block entfernen",
+      "renamePreset": "Umbenennen",
+      "renameWithSuffix": "Mit Suffix umbenennen",
+      "resolvePreviewErrors": "Zuerst blockierende Vorschaufehler beheben",
+      "resultSummary": "{{succeeded}} erfolgreich, {{failed}} fehlgeschlagen, {{retained}} Quellen beibehalten",
+      "savePreset": "Vorgabe speichern",
+      "selectFolder": "Quellordner auswählen",
+      "skip": "Überspringen",
+      "source": "Quelle",
       "sourceFiles": "Quelldateien",
       "startImport": "Import starten",
-      "title": "Importeinstellungen"
+      "status": "Status",
+      "title": "Importeinstellungen",
+      "useCaptureTime": "Zeitstempel auf Aufnahmezeit setzen"
     },
     "lensCorrection": {
       "amount": "Betrag",
@@ -1763,8 +1926,8 @@
     "tagging": {
       "addCustomPlaceholder": "Benutzerdefinierte KI-Tags hinzufügen (kommagetrennt)...",
       "addCustomTooltip": "KI-Tag hinzufügen",
-      "addShortcutTooltip": "Shortcut hinzufügen",
       "addShortcutsPlaceholder": "Shortcuts hinzufügen (kommagetrennt)...",
+      "addShortcutTooltip": "Shortcut hinzufügen",
       "aiTagging": "KI-Tagging",
       "aiTaggingDesc": "Aktiviert automatisches Bild-Tagging mit einem KI-Modell (CLIP). Dies lädt ein zusätzliches Modell herunter und beeinträchtigt die Leistung beim Durchsuchen.",
       "amount": "Betrag",

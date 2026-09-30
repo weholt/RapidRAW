@@ -36,6 +36,8 @@ import Dropdown from '../../ui/Dropdown';
 import { useSettingsStore } from '../../../store/useSettingsStore';
 import { useUIStore } from '../../../store/useUIStore';
 import { ADVANCED_QUERY_REGEX } from '../../../hooks/useSortedLibrary';
+import { CAPTURE_GAP_LADDER_SECONDS, captureGapSecondsForSettings } from '../../../utils/captureTimeGrouping';
+import debounce from 'lodash.debounce';
 
 function DropdownMenu({ buttonContent, buttonTitle, children, contentClassName = 'w-56' }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -514,15 +516,44 @@ export function ViewOptionsDropdown({
     })),
   );
 
-  const { appSettings, handleSettingsChange } = useSettingsStore(
+  const { appSettings, setAppSettings, handleSettingsChange } = useSettingsStore(
     useShallow((state) => ({
       appSettings: state.appSettings,
+      setAppSettings: state.setAppSettings,
       handleSettingsChange: state.handleSettingsChange,
     })),
   );
 
   const groupingMode: GroupingMode = appSettings?.grouping ?? 'off';
   const requireMatchingExif = appSettings?.requireMatchingExif ?? false;
+  const captureGroupingEnabled = appSettings?.captureTimeGroupingEnabled ?? false;
+  const captureGapSeconds = captureGapSecondsForSettings(
+    appSettings?.captureTimeGroupingSeconds,
+    appSettings?.captureTimeGroupingMinutes,
+  );
+  const captureGapLabel =
+    captureGapSeconds < 60
+      ? t('library.header.viewOptions.captureSessionsSeconds', { count: captureGapSeconds })
+      : t('library.header.viewOptions.captureSessionsMinutes', { count: captureGapSeconds / 60 });
+
+  const persistCaptureSettings = useMemo(
+    () => debounce((settings: NonNullable<typeof appSettings>) => handleSettingsChange(settings), 350),
+    [handleSettingsChange],
+  );
+
+  useEffect(
+    () => () => {
+      persistCaptureSettings.flush();
+    },
+    [persistCaptureSettings],
+  );
+
+  const updateCaptureSettings = (updates: Partial<NonNullable<typeof appSettings>>) => {
+    if (!appSettings) return;
+    const nextSettings = { ...appSettings, ...updates };
+    setAppSettings(nextSettings);
+    persistCaptureSettings(nextSettings);
+  };
 
   const isFilterActive =
     filterCriteria.rating !== 0 ||
@@ -589,6 +620,7 @@ export function ViewOptionsDropdown({
                 {t('library.header.viewOptions.sortBy')}
               </Text>
               <button
+                disabled={captureGroupingEnabled}
                 onClick={() =>
                   setSortCriteria((prev: SortCriteria) => ({
                     ...prev,
@@ -600,7 +632,7 @@ export function ViewOptionsDropdown({
                     ? t('library.header.viewOptions.sortDescending')
                     : t('library.header.viewOptions.sortAscending')
                 }
-                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 bg-transparent border-none text-text-secondary hover:text-text-primary rounded-sm transition-colors"
+                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 bg-transparent border-none text-text-secondary hover:text-text-primary rounded-sm transition-colors disabled:opacity-40"
               >
                 {sortCriteria.order === SortDirection.Ascending ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
@@ -608,7 +640,8 @@ export function ViewOptionsDropdown({
             <div className="px-3 mt-1">
               <Dropdown
                 options={sortOptions.map((opt) => ({ value: opt.key, label: opt.label, disabled: opt.disabled }))}
-                value={sortCriteria.key}
+                value={captureGroupingEnabled ? 'date_taken' : sortCriteria.key}
+                disabled={captureGroupingEnabled}
                 onChange={(val) => setSortCriteria((prev: SortCriteria) => ({ ...prev, key: val }))}
                 triggerClassName="bg-bg-primary w-full"
               />
@@ -760,6 +793,58 @@ export function ViewOptionsDropdown({
                         }}
                       />
                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <div>
+            <Text as="div" variant={TextVariants.small} weight={TextWeights.semibold} className="px-3 py-1 uppercase">
+              {t('library.header.viewOptions.captureSessions')}
+            </Text>
+            <div className="px-3 mt-1 space-y-2">
+              <Switch
+                checked={captureGroupingEnabled}
+                id="capture-time-grouping-toggle"
+                label={t('library.header.viewOptions.captureSessionsEnable')}
+                onChange={(checked) => updateCaptureSettings({ captureTimeGroupingEnabled: checked })}
+              />
+              <AnimatePresence initial={false}>
+                {captureGroupingEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden px-1"
+                  >
+                    <label htmlFor="capture-time-grouping-gap" className="flex items-center justify-between">
+                      <Text variant={TextVariants.small} color={TextColors.secondary}>
+                        {t('library.header.viewOptions.captureSessionsGap')}
+                      </Text>
+                      <Text variant={TextVariants.small} weight={TextWeights.semibold}>
+                        {captureGapLabel}
+                      </Text>
+                    </label>
+                    <input
+                      id="capture-time-grouping-gap"
+                      type="range"
+                      min={0}
+                      max={CAPTURE_GAP_LADDER_SECONDS.length - 1}
+                      step={1}
+                      value={Math.max(0, CAPTURE_GAP_LADDER_SECONDS.indexOf(captureGapSeconds))}
+                      aria-label={t('library.header.viewOptions.captureSessionsSliderLabel', {
+                        gap: captureGapLabel,
+                      })}
+                      onChange={(event) => {
+                        const index = Math.max(
+                          0,
+                          Math.min(CAPTURE_GAP_LADDER_SECONDS.length - 1, Number(event.target.value)),
+                        );
+                        updateCaptureSettings({ captureTimeGroupingSeconds: CAPTURE_GAP_LADDER_SECONDS[index] });
+                      }}
+                      className="w-full accent-accent"
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>

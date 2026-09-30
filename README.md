@@ -74,6 +74,7 @@ RapidRAW is still in active development and isn't yet as polished as mature tool
 <details>
 <summary><strong>Expand further</strong></summary>
 
+- **2026-08-31:** Added headless `--workflow` selection and `--list-workflows` for export workflows
 - **2026-08-13:** Replaced local contrast sharpening with a high-quality multi-scale filter
 - **2026-08-11:** Added automatic canvas cropping for generative AI inpainting workflows
 - **2026-08-07:** Updated Lensfun database for latest camera bodies and lenses
@@ -521,9 +522,10 @@ Explore example edits processed entirely within RapidRAW. You can download the `
       <h4>Library & Workflow</h4>
       <ul>
         <li><strong>Image Library:</strong> Effortlessly manage your photo collection for a streamlined workflow.</li>
+        <li><strong>Capture Sessions:</strong> Optionally organize visible images into adjacent-time sessions with configurable gaps. See <a href="docs/capture-time-grouping.md">capture-session grouping</a>.</li>
         <li><strong>Culling View:</strong> Compare images side-by-side with star ratings, color labels, and metadata.</li>
         <li><strong>Organization:</strong> Recursive folder view, virtual copies, color labels, star ratings, and custom tags.</li>
-        <li><strong>File Operations:</strong> Import, copy, move, rename, and duplicate images/folders.</li>
+        <li><strong>File Operations:</strong> Preview-first metadata import with verified copy/move and sidecars, plus copy, rename, and duplicate operations. See <a href="docs/import.md">import safety and patterns</a>.</li>
         <li><strong>Filmstrip View:</strong> Quickly navigate between images in your current folder while editing.</li>
         <li><strong>Batch Operations:</strong> Apply adjustments or export entire batches of images simultaneously.</li>
         <li><strong>EXIF Data & CLI:</strong> Full metadata viewer and headless CLI batch exporter for scripting/terminal use.</li>
@@ -606,6 +608,7 @@ RapidRAW isn't just for RAW files! You can also import, edit, and convert standa
 - **Graphics & Textures:** `.tga`, `.ico`, `.dds`
 - **Specialist Formats:** `.qoi`, `.ff`
 - **Netpbm Bitmaps:** `.pnm`, `.pbm`, `.pgm`, `.ppm`, `.pam`
+
 </details>
 
 <details>
@@ -756,6 +759,12 @@ npm run tauri build
 ./src-tauri/target/release/RapidRAW
 ```
 
+On Windows, use `npm run tauri -- build --no-bundle` to create a standalone
+`src-tauri\target\release\RapidRAW.exe` without an installer. Run that release
+executable with its adjacent `resources` directory. A binary from
+`src-tauri\target\debug` may try to load `http://localhost:1420` and requires the
+development server started by `npm start`; it is not a standalone test build.
+
 <details>
 <summary><strong>Camera Tethering Build (macOS & Linux)</strong></summary>
 
@@ -871,6 +880,12 @@ rapidraw export /path/to/photo.raw --output /path/to/output.png --format png
 
 # Batch export a folder using a custom adjustments JSON file to override sidecars
 rapidraw export /path/to/photos --output /path/to/output_dir --adjustments /path/to/preset.json
+
+# Run export workflows (repeatable, executed in the given order)
+rapidraw export /path/to/photos --output /path/to/output_dir --workflow example-receipt --workflow my-backup
+
+# List discovered export workflows with phase, runtime availability, and source
+rapidraw --list-workflows
 ```
 
 > **Note:** By default, headless export automatically detects and applies edits stored in `.rrdata` sidecar files located alongside your source images. You can override sidecars for all exported images by passing a custom JSON file using the `--adjustments` flag.
@@ -883,6 +898,13 @@ rapidraw export /path/to/photos --output /path/to/output_dir --adjustments /path
 | `--quality <1-100>`    | Image export quality                                                   | `90`              |
 | `--keep-metadata`      | Retain EXIF/capture metadata in exported files                         | `false`           |
 | `--adjustments <path>` | Path to a custom JSON file containing adjustments to override sidecars | _(Auto-detected)_ |
+| `--workflow <id>`      | Run the export workflow with this id; repeatable, order is preserved   | _(None)_          |
+
+Headless exports run **no workflows** unless one or more `--workflow <id>` flags name them;
+invalid, unavailable, or duplicate ids fail before any image is exported (exit code `1`).
+See [docs/export-workflows.md](docs/export-workflows.md) for the workflow directory locations,
+runtime detection, phases, security model, timeouts, cancellation limitations, exit codes, and
+complete zero-dependency Python and Node examples.
 
 ## System Requirements
 
@@ -911,6 +933,7 @@ If the application crashes immediately when you try to start editing a picture, 
 3.  Locate the **Processing Backend** setting.
 4.  Change it from **Auto** to a specific backend supported by your OS (e.g., **Vulkan**, **DirectX12**, **OpenGL**, or **Metal**).
 5.  Restart the application and try opening the image again. Experiment with different backends if the first one doesn't work.
+
 </details>
 
 <details>
