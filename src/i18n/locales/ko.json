@@ -17,6 +17,9 @@
       "toneMapper": "톤 매퍼",
       "whites": "화이트"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "{{name}} 색상 선택",
       "calibration": {
@@ -131,6 +134,32 @@
       "roundness": "둥글기",
       "size": "크기",
       "vignette": "비네트"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -299,10 +328,14 @@
       },
       "sections": {
         "basic": "기본",
+        "blackWhite": "Black & White",
         "color": "색상",
+        "colorBalance": "Color Balance",
         "curves": "커브",
         "details": "디테일",
-        "effects": "효과"
+        "effects": "효과",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "조정",
       "tooltips": {

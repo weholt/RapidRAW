@@ -17,6 +17,9 @@
       "toneMapper": "Mapeador de Tons",
       "whites": "Brancos"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "Selecionar cor {{name}}",
       "calibration": {
@@ -131,6 +134,32 @@
       "roundness": "Arredondamento",
       "size": "Tamanho",
       "vignette": "Vinheta"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -315,10 +344,14 @@
       },
       "sections": {
         "basic": "Básico",
+        "blackWhite": "Black & White",
         "color": "Cor",
+        "colorBalance": "Color Balance",
         "curves": "Curvas",
         "details": "Detalhes",
-        "effects": "Efeitos"
+        "effects": "Efeitos",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "Ajustes",
       "tooltips": {

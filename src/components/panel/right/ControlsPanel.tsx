@@ -5,10 +5,13 @@ import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import type { ParseKeys } from 'i18next';
 import BasicAdjustments from '../../adjustments/Basic';
+import LevelsPanel from '../../adjustments/Levels';
 import CurveGraph from '../../adjustments/Curves';
-import ColorPanel from '../../adjustments/Color';
+import ColorPanel, { ColorGradingPanel } from '../../adjustments/Color';
+import BlackWhitePanel from '../../adjustments/BlackWhite';
 import DetailsPanel from '../../adjustments/Details';
 import EffectsPanel from '../../adjustments/Effects';
+import VignettingPanel from '../../adjustments/Vignetting';
 import CollapsibleSection from '../../ui/CollapsibleSection';
 import Waveform from '../editor/Waveform';
 import Resizer from '../../ui/Resizer';
@@ -26,6 +29,12 @@ import { useWaveformControls } from '../../../hooks/useWaveformControls';
 
 export default function Controls() {
   const { t } = useTranslation();
+  const extractedSectionTitles: Record<string, string> = {
+    levels: t('editor.adjustments.sections.levels'),
+    colorBalance: t('editor.adjustments.sections.colorBalance'),
+    blackWhite: t('editor.adjustments.sections.blackWhite'),
+    vignetting: t('editor.adjustments.sections.vignetting'),
+  };
   const { showContextMenu } = useContextMenu();
   const { isResizingWaveform, onToggleWaveform, setActiveWaveformChannel, handleWaveformResize } =
     useWaveformControls();
@@ -161,10 +170,10 @@ export default function Controls() {
       setAdjustments((prev: Adjustments) => ({
         ...prev,
         ...copiedSectionAdjustments.values,
-        sectionVisibility: {
-          ...(prev.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility),
-          [sectionName]: true,
-        },
+        sectionVisibility:
+          sectionName in INITIAL_ADJUSTMENTS.sectionVisibility
+            ? { ...(prev.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility), [sectionName]: true }
+            : prev.sectionVisibility,
       }));
     };
 
@@ -176,10 +185,10 @@ export default function Controls() {
       setAdjustments((prev: Adjustments) => ({
         ...prev,
         ...resetValues,
-        sectionVisibility: {
-          ...(prev.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility),
-          [sectionName]: true,
-        },
+        sectionVisibility:
+          sectionName in INITIAL_ADJUSTMENTS.sectionVisibility
+            ? { ...(prev.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility), [sectionName]: true }
+            : prev.sectionVisibility,
       }));
     };
 
@@ -277,19 +286,25 @@ export default function Controls() {
           Object.keys(ADJUSTMENT_SECTIONS).map((sectionName: string) => {
             const SectionComponent: any = {
               basic: BasicAdjustments,
+              levels: LevelsPanel,
               curves: CurveGraph,
               color: ColorPanel,
+              colorBalance: ColorGradingPanel,
+              blackWhite: BlackWhitePanel,
               details: DetailsPanel,
               effects: EffectsPanel,
+              vignetting: VignettingPanel,
             }[sectionName];
 
-            const title = t(`editor.adjustments.sections.${sectionName}` as ParseKeys);
+            const title =
+              extractedSectionTitles[sectionName] || t(`editor.adjustments.sections.${sectionName}` as ParseKeys);
             const sectionVisibility = adjustments.sectionVisibility || INITIAL_ADJUSTMENTS.sectionVisibility;
 
             return (
               <div className="shrink-0 group" key={sectionName}>
                 <CollapsibleSection
-                  isContentVisible={sectionVisibility[sectionName as keyof SectionVisibility]}
+                  canToggleVisibility={sectionName in INITIAL_ADJUSTMENTS.sectionVisibility}
+                  isContentVisible={sectionVisibility[sectionName as keyof SectionVisibility] !== false}
                   isOpen={collapsibleSectionsState[sectionName as keyof typeof collapsibleSectionsState]}
                   onContextMenu={(e: any) => handleSectionContextMenu(e, sectionName)}
                   onToggle={() => handleToggleSection(sectionName)}

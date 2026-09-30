@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { INITIAL_ADJUSTMENTS, adjustmentsToRecipe, recipeToAdjustments } from '../utils/adjustments';
+import { Adjustments, INITIAL_ADJUSTMENTS, adjustmentsToRecipe, recipeToAdjustments } from '../utils/adjustments';
 
 describe('extracted RAW development controls', () => {
   it('keeps Levels, Color Balance, black and white, and vignetting across the host recipe boundary', () => {
-    const edited = {
+    const edited: Adjustments = {
       ...INITIAL_ADJUSTMENTS,
       levels: {
         ...INITIAL_ADJUSTMENTS.levels,

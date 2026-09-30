@@ -88,6 +88,7 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "exposure",
         "brightness",
         "contrast",
+        "levels",
         "curves",
         "pointCurves",
         "parametricCurve",
@@ -104,6 +105,8 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "hsl",
         "hue",
         "colorGrading",
+        "blackWhiteEnabled",
+        "blackWhiteMix",
         "colorCalibration",
         "clarity",
         "structure",
@@ -116,6 +119,7 @@ pub fn all_available_adjustments() -> HashSet<String> {
         "chromaticAberrationRedCyan",
         "chromaticAberrationBlueYellow",
         "vignetteAmount",
+        "vignetting",
         "vignetteFeather",
         "vignetteMidpoint",
         "vignetteRoundness",
@@ -809,6 +813,16 @@ pub fn save_settings(settings: AppSettings, app_handle: AppHandle) -> Result<(),
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn extracted_controls_are_available_for_copy_and_enabled_by_default() {
+        let available = all_available_adjustments();
+        let included = default_included_adjustments();
+        for key in ["levels", "blackWhiteEnabled", "blackWhiteMix", "vignetting"] {
+            assert!(available.contains(key), "missing available key {key}");
+            assert!(included.contains(key), "missing included key {key}");
+        }
+    }
 
     #[test]
     fn typed_contracts_old_settings_receive_capture_grouping_defaults() {

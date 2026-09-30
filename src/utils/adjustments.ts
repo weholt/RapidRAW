@@ -230,6 +230,8 @@ export interface Adjustments {
   aiPatches: Array<AiPatch>;
   aspectRatio: number | null;
   blacks: number;
+  blackWhiteEnabled: boolean;
+  blackWhiteMix: Recipe['blackWhiteMix'];
   brightness: number;
   centré: number;
   clarity: number;
@@ -286,6 +288,7 @@ export interface Adjustments {
   } | null;
   lensMaker: string | null;
   lensModel: string | null;
+  levels: Recipe['levels'];
   lumaNoiseReduction: number;
   lutData?: string | null;
   lutIntensity?: number;
@@ -319,6 +322,7 @@ export interface Adjustments {
   vignetteFeather: number;
   vignetteMidpoint: number;
   vignetteRoundness: number;
+  vignetting: Recipe['vignetting'];
   whites: number;
 }
 
@@ -426,10 +430,14 @@ export interface MaskContainer {
 export interface Sections {
   [index: string]: Array<string>;
   basic: Array<string>;
+  levels: Array<string>;
   curves: Array<string>;
   color: Array<string>;
+  colorBalance: Array<string>;
+  blackWhite: Array<string>;
   details: Array<string>;
   effects: Array<string>;
+  vignetting: Array<string>;
 }
 
 export interface SectionVisibility {
@@ -664,6 +672,20 @@ export const normalizeLoadedAdjustments = (loadedAdjustments: Adjustments): any 
     lensTcaEnabled: loadedAdjustments.lensTcaEnabled ?? INITIAL_ADJUSTMENTS.lensTcaEnabled,
     lensVignetteEnabled: loadedAdjustments.lensVignetteEnabled ?? INITIAL_ADJUSTMENTS.lensVignetteEnabled,
     lensDistortionParams: loadedAdjustments.lensDistortionParams ?? INITIAL_ADJUSTMENTS.lensDistortionParams,
+    levels: {
+      ...INITIAL_ADJUSTMENTS.levels,
+      ...(loadedAdjustments.levels || {}),
+      ...Object.fromEntries(
+        (['rgb', 'red', 'green', 'blue'] as const).map((channel) => [
+          channel,
+          { ...INITIAL_ADJUSTMENTS.levels[channel], ...(loadedAdjustments.levels?.[channel] || {}) },
+        ]),
+      ),
+    },
+    vignetting: { ...INITIAL_ADJUSTMENTS.vignetting, ...(loadedAdjustments.vignetting || {}) },
+    blackWhiteMix: INITIAL_ADJUSTMENTS.blackWhiteMix.map(
+      (value, index) => loadedAdjustments.blackWhiteMix?.[index] ?? value,
+    ) as Recipe['blackWhiteMix'],
     transformDistortion: loadedAdjustments.transformDistortion ?? INITIAL_ADJUSTMENTS.transformDistortion,
     transformVertical: loadedAdjustments.transformVertical ?? INITIAL_ADJUSTMENTS.transformVertical,
     transformHorizontal: loadedAdjustments.transformHorizontal ?? INITIAL_ADJUSTMENTS.transformHorizontal,
@@ -717,6 +739,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
       label: 'modals.copyPaste.groups.curves',
       keys: ['curves', 'pointCurves', 'parametricCurve', 'curveMode'],
     },
+    { label: 'editor.adjustments.sections.levels', keys: ['levels'] },
   ],
   color: [
     { label: 'modals.copyPaste.groups.whiteBalance', keys: [ColorAdjustment.Temperature, ColorAdjustment.Tint] },
@@ -726,6 +749,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
       keys: [ColorAdjustment.Hue],
     },
     { label: 'modals.copyPaste.groups.colorGrading', keys: [ColorAdjustment.ColorGrading] },
+    { label: 'editor.adjustments.sections.blackWhite', keys: ['blackWhiteEnabled', 'blackWhiteMix'] },
     { label: 'modals.copyPaste.groups.colorMixer', keys: [ColorAdjustment.Hsl] },
     { label: 'modals.copyPaste.groups.colorCalibration', keys: ['colorCalibration'] },
   ],
@@ -753,6 +777,7 @@ export const ADJUSTMENT_GROUPS: Record<string, AdjustmentGroup[]> = {
     },
   ],
   effects: [
+    { label: 'editor.adjustments.sections.vignetting', keys: ['vignetting'] },
     {
       label: 'modals.copyPaste.groups.vignette',
       keys: [Effect.VignetteAmount, Effect.VignetteFeather, Effect.VignetteMidpoint, Effect.VignetteRoundness],
@@ -826,6 +851,7 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     BasicAdjustment.Exposure,
     'toneMapper',
   ],
+  levels: ['levels'],
   curves: ['curves', 'pointCurves', 'parametricCurve', 'curveMode'],
   color: [
     ColorAdjustment.Saturation,
@@ -833,10 +859,11 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     ColorAdjustment.Tint,
     ColorAdjustment.Vibrance,
     ColorAdjustment.Hsl,
-    ColorAdjustment.ColorGrading,
     'colorCalibration',
     ColorAdjustment.Hue,
   ],
+  colorBalance: [ColorAdjustment.ColorGrading],
+  blackWhite: ['blackWhiteEnabled', 'blackWhiteMix'],
   details: [
     DetailsAdjustment.Clarity,
     DetailsAdjustment.Dehaze,
@@ -875,4 +902,5 @@ export const ADJUSTMENT_SECTIONS: Sections = {
     Effect.LensBlurMinFade,
     Effect.LensBlurMaxFade,
   ],
+  vignetting: ['vignetting'],
 };

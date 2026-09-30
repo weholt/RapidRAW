@@ -106,7 +106,7 @@ const ColorSwatch = ({ color, name, isActive, ariaLabel, onClick }: ColorSwatchP
   );
 };
 
-const ColorGradingPanel = ({ adjustments, setAdjustments, onDragStateChange }: ColorPanelProps) => {
+export const ColorGradingPanel = ({ adjustments, setAdjustments, onDragStateChange }: ColorPanelProps) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'3way' | 'global'>('3way');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -549,17 +549,19 @@ export default function ColorPanel({
         />
       </div>
 
-      <div className="p-2 bg-bg-tertiary rounded-md">
-        <Text variant={TextVariants.heading} className="mb-3">
-          {t('adjustments.color.colorGrading')}
-        </Text>
-        <ColorGradingPanel
-          adjustments={adjustments}
-          setAdjustments={setAdjustments}
-          appSettings={appSettings}
-          onDragStateChange={onDragStateChange}
-        />
-      </div>
+      {isForMask && (
+        <div className="p-2 bg-bg-tertiary rounded-md">
+          <Text variant={TextVariants.heading} className="mb-3">
+            {t('adjustments.color.colorGrading')}
+          </Text>
+          <ColorGradingPanel
+            adjustments={adjustments}
+            setAdjustments={setAdjustments}
+            appSettings={appSettings}
+            onDragStateChange={onDragStateChange}
+          />
+        </div>
+      )}
 
       <div className="p-2 bg-bg-tertiary rounded-md">
         <Text variant={TextVariants.heading} className="mb-3">

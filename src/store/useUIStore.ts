@@ -12,10 +12,14 @@ export type SwitcherPlacement = 'bottom' | 'right' | 'left' | 'top';
 
 interface CollapsibleSectionsState {
   basic: boolean;
+  levels: boolean;
   color: boolean;
+  colorBalance: boolean;
+  blackWhite: boolean;
   curves: boolean;
   details: boolean;
   effects: boolean;
+  vignetting: boolean;
 }
 
 interface ConfirmModalState {
@@ -314,7 +318,17 @@ export const useUIStore = create<UIState>((set, get) => ({
   activePanel: Panel.Adjustments,
   renderedPanel: Panel.Adjustments,
   slideDirection: 1,
-  collapsibleSectionsState: { basic: true, color: false, curves: true, details: false, effects: false },
+  collapsibleSectionsState: {
+    basic: true,
+    levels: false,
+    curves: true,
+    color: false,
+    colorBalance: false,
+    blackWhite: false,
+    details: false,
+    effects: false,
+    vignetting: false,
+  },
 
   isCreateFolderModalOpen: false,
   isRenameFolderModalOpen: false,

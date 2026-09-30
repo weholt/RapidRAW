@@ -17,6 +17,9 @@
       "toneMapper": "トーンマッパー",
       "whites": "白レベル"
     },
+    "blackWhite": {
+      "convert": "Convert to black and white"
+    },
     "color": {
       "ariaSelectColor": "{{name}}色を選択",
       "calibration": {
@@ -131,6 +134,32 @@
       "roundness": "丸み",
       "size": "サイズ",
       "vignette": "周辺光量補正"
+    },
+    "levels": {
+      "channels": {
+        "blue": "Blue",
+        "green": "Green",
+        "red": "Red",
+        "rgb": "RGB"
+      },
+      "enabled": "Enable levels",
+      "input": "Input levels",
+      "inputBlack": "Black point",
+      "inputWhite": "White point",
+      "midtone": "Midtone",
+      "output": "Output levels",
+      "outputBlack": "Output black",
+      "outputWhite": "Output white"
+    },
+    "vignetting": {
+      "amount": "Amount",
+      "enabled": "Enable vignetting",
+      "method": "Method",
+      "methods": {
+        "circular": "Circular",
+        "circularOnCrop": "Circular on crop",
+        "ellipticOnCrop": "Elliptic on crop"
+      }
     }
   },
   "contextMenus": {
@@ -299,10 +328,14 @@
       },
       "sections": {
         "basic": "基本",
+        "blackWhite": "Black & White",
         "color": "カラー",
+        "colorBalance": "Color Balance",
         "curves": "トーンカーブ",
         "details": "ディテール",
-        "effects": "効果"
+        "effects": "効果",
+        "levels": "Levels",
+        "vignetting": "Vignetting"
       },
       "title": "補正",
       "tooltips": {
