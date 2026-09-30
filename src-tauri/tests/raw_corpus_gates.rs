@@ -53,6 +53,28 @@ fn sha256_file(path: &Path) -> String {
     hex::encode(hasher.finalize())
 }
 
+fn render_source_hashes(path: &Path) -> [String; 3] {
+    let source =
+        fs::read_to_string(path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    render_source_text_hashes(&source)
+}
+
+fn render_source_text_hashes(source: &str) -> [String; 3] {
+    let lf = source.replace("\r\n", "\n");
+    let crlf = lf.replace('\n', "\r\n");
+    [source, &lf, &crlf].map(|text| hex::encode(Sha256::digest(text.as_bytes())))
+}
+
+#[test]
+fn render_source_hash_ignores_checkout_line_endings_but_not_code_changes() {
+    let lf = "fn main() {\n    println!(\"hello\");\n}\n";
+    let crlf = lf.replace('\n', "\r\n");
+    let changed = "fn main() {\n    println!(\"changed\");\n}\n";
+    let hashes = render_source_text_hashes(lf);
+    assert!(hashes.contains(&hex::encode(Sha256::digest(crlf.as_bytes()))));
+    assert!(!hashes.contains(&hex::encode(Sha256::digest(changed.as_bytes()))));
+}
+
 fn entries(manifest: &serde_json::Value) -> Vec<&serde_json::Value> {
     manifest["files"]
         .as_array()
@@ -322,12 +344,13 @@ fn render_relevant_engine_sources_still_match_the_pinned_baseline() {
             file.is_file(),
             "pinned engine source {source} no longer exists"
         );
-        let actual = sha256_file(&file);
-        assert_eq!(
-            actual, pinned,
+        let candidates = render_source_hashes(&file);
+        assert!(
+            candidates.iter().any(|hash| hash == &pinned),
             "engine source {source} changed since the baseline was captured; \
              the stored baseline belongs to the pre-extraction renderer and must \
-             be re-captured deliberately (never auto-regenerated)"
+             be re-captured deliberately (never auto-regenerated); expected {pinned}, \
+             LF/CRLF candidates: {candidates:?}"
         );
     }
 }

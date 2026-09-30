@@ -927,7 +927,7 @@ fn committed_generated_files_match_the_generator() {
     let ts = std::fs::read_to_string(gen_dir.join("recipe.ts"))
         .expect("gen/recipe.ts must exist; run the update_generated_files test");
     assert_eq!(
-        ts,
+        ts.replace("\r\n", "\n"),
         contract::generate_typescript(),
         "gen/recipe.ts is stale"
     );
