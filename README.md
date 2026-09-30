@@ -759,6 +759,12 @@ npm run tauri build
 ./src-tauri/target/release/RapidRAW
 ```
 
+On Windows, use `npm run tauri -- build --no-bundle` to create a standalone
+`src-tauri\target\release\RapidRAW.exe` without an installer. Run that release
+executable with its adjacent `resources` directory. A binary from
+`src-tauri\target\debug` may try to load `http://localhost:1420` and requires the
+development server started by `npm start`; it is not a standalone test build.
+
 <details>
 <summary><strong>Camera Tethering Build (macOS & Linux)</strong></summary>
 
