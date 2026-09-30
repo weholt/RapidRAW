@@ -9,13 +9,11 @@ use serde::{Deserialize, Serialize};
 use sysinfo::Disks;
 use tokio::sync::Mutex as TokioMutex;
 use tokio::task::JoinHandle;
-use wgpu::{Texture, TextureView};
 
 use crate::ai_processing::AiState;
 use crate::cache_utils::DecodedImageCache;
 use crate::camera_tethering::CameraSession;
 use crate::export_workflows::{WorkflowConcurrencyGate, WorkflowDiscoveryCache};
-use crate::gpu_processing::GpuProcessor;
 use crate::image_processing::GpuContext;
 use crate::launch_request::ExternalEditSession;
 use crate::lens_correction::LensDatabase;
@@ -47,20 +45,6 @@ pub struct CachedPreview {
     pub unscaled_crop_offset: (f32, f32),
     pub preview_dim: u32,
     pub interactive_divisor: f32,
-}
-
-pub struct GpuImageCache {
-    pub texture: Texture,
-    pub texture_view: TextureView,
-    pub width: u32,
-    pub height: u32,
-    pub transform_hash: u64,
-}
-
-pub struct GpuProcessorState {
-    pub processor: GpuProcessor,
-    pub width: u32,
-    pub height: u32,
 }
 
 pub struct PreviewJob {
@@ -144,8 +128,10 @@ pub struct AppState {
     pub original_image: Mutex<Option<LoadedImage>>,
     pub cached_preview: Mutex<Option<CachedPreview>>,
     pub gpu_context: Mutex<Option<GpuContext>>,
-    pub gpu_image_cache: Mutex<Option<GpuImageCache>>,
-    pub gpu_processor: Mutex<Option<GpuProcessorState>>,
+    /// Engine-owned offscreen renderer with its bounded GPU caches
+    /// (pipeline allocation + uploaded base texture), replacing the old
+    /// host-side gpu_image_cache/gpu_processor state.
+    pub gpu_renderer: Mutex<Option<rapidraw_develop::gpu::OffscreenRenderer>>,
     pub ai_state: Mutex<Option<AiState>>,
     pub ai_init_lock: TokioMutex<()>,
     pub export_task_token: Arc<Mutex<Option<Arc<AtomicBool>>>>,

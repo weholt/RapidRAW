@@ -3,4 +3,6 @@ dist
 src-tauri/target
 src-tauri/gen
 src-tauri/rawler
+crates/rapidraw-edit-model/gen
+crates/rapidraw-edit-model/target
 data

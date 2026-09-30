@@ -1,0 +1,23 @@
+[package]
+name = "rapidraw-develop"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+description = "High-precision RAW decode and geometry primitives for the RapidRAW/Lap development engine: typed decode options, linear f32 buffer ownership, oriented-frame crop/rotate/flip geometry."
+publish = false
+
+[dependencies]
+rawler = { git = "https://github.com/CyberTimon/RapidRAW-DngLab.git", rev = "3289454e9a65f5c973594687cca35602fa8181e3" }
+rapidraw-edit-model = { path = "../rapidraw-edit-model" }
+log = "0.4"
+image = "0.25.10"
+wgpu = "29.0"
+pollster = "1.0"
+bytemuck = { version = "1.25", features = ["derive"] }
+half = { version = "2.7.1", features = ["bytemuck"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+glam = "0.33.5"
+rayon = "1.12.0"
+quick-xml = { version = "0.41", features = ["serialize"] }
+fuzzy-matcher = "0.3.7"

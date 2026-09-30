@@ -1,0 +1,12 @@
+# Workspace for the extracted engine crates consumed by both hosts
+# (lap-517 / TASK-205, engine issue rapidraw-d73). The Tauri application in
+# src-tauri/ stays a standalone workspace with its own lock file; only the
+# host-neutral crates are exposed for pinned-revision git consumption
+# (rapidraw-develop = { git = "<local engine checkout>", rev = "<sha>" }).
+[workspace]
+resolver = "3"
+members = [
+    "crates/rapidraw-edit-model",
+    "crates/rapidraw-develop",
+]
+exclude = ["src-tauri"]

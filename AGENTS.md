@@ -2,7 +2,8 @@
 
 Agent instructions for RapidRAW (Tauri 2 + React RAW editor). Rust toolchain section
 seeded by rapidraw-3cb; canonical command set, CI entry points, and the RED-GREEN
-Pebbles workflow added by rapidraw-e3d.
+Pebbles workflow added by rapidraw-e3d; Lap extraction coordination added by
+rapidraw-dfa.
 
 ## Project purpose
 
@@ -127,6 +128,21 @@ still be used by absolute path if ever needed.
 - CI is unaffected by the PATH hazard: GitHub runners use rustup-managed toolchains
   selected by `rust-toolchain.toml`; the machine-local pin is gitignored and never
   leaves this machine.
+
+## Lap extraction coordination
+
+This checkout (`feature/lap-engine-extraction`) is the isolated extraction host
+for the Lap RAW-development plan PLAN-260926, coordinated from the Lap repository
+at `C:/Users/Thomas/Desktop/lap` (governing contract: `docs/raw-development/spec.md`
+there; baseline gates in `docs/raw-development/baseline.md`). Rules for work here:
+
+- Every Lap task that touches this checkout creates or reuses a linked Pebbles
+  issue here (e.g. rapidraw-dfa for Lap lap-7f5.1/TASK-101) and records the
+  coordinating Lap issue ID before source edits.
+- `C:/Users/Thomas/Desktop/RapidRAW` is reference-only; never modify it.
+- No pushes, publication, or deployment; local commits reference the issue ID.
+- Shared schema/engine changes stay authoritative for both hosts; Lap consumes a
+  pinned engine revision rather than an unversioned branch.
 
 ## Pebbles workflow (RED-GREEN)
 
