@@ -5157,11 +5157,13 @@ name = "rapidraw-develop"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "fuzzy-matcher",
  "glam 0.33.5",
  "half",
  "image",
  "log",
  "pollster",
+ "quick-xml 0.41.0",
  "rapidraw-edit-model",
  "rawler",
  "rayon",
